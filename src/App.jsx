@@ -1,122 +1,166 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
+/**
+ * App.jsx — Main orchestrator for the Burnup Chart Generator
+ *
+ * Architecture:
+ *   ┌─────────────────────────────────────────┐
+ *   │  App (state owner)                       │
+ *   │  ├─ fechaInicio, fechaFin (date filters) │
+ *   │  ├─ entries[] (data table rows)          │
+ *   │  │                                       │
+ *   │  ├─ <DateFilters />                      │
+ *   │  ├─ <BurnupChart /> (reads state)        │
+ *   │  ├─ <DataTable /> (reads + mutates)      │
+ *   │  └─ <ShareFooter /> (reads URL + chart)  │
+ *   │                                          │
+ *   │  URL Sync: state → encode → replaceState │
+ *   └─────────────────────────────────────────┘
+ *
+ * State flow:
+ *   1. On mount: read ?data= token → decode → initialize state
+ *   2. On every state change: re-render chart + encode state → update URL
+ *   3. Debounced URL writes to avoid thrashing during rapid edits
+ */
+
+import { useState, useEffect, useRef, useCallback } from 'react'
+import dayjs from 'dayjs'
+import BurnupChart from './components/BurnupChart'
+import DataTable from './components/DataTable'
+import ShareFooter from './components/ShareFooter'
+import { encodeState, decodeState, readUrlToken, writeUrlToken } from './lib/urlState'
 import './App.css'
 
-function App() {
-  const [count, setCount] = useState(0)
+// ─── Default empty state ──────────────────────────────────────────────────────
 
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+const DEFAULT_STATE = {
+  fechaInicio: '',
+  fechaFin: '',
+  entries: [],
 }
 
-export default App
+/**
+ * Initialize app state from the URL token, or return defaults.
+ */
+function loadInitialState() {
+  const token = readUrlToken()
+  if (token) {
+    const decoded = decodeState(token)
+    if (decoded) return decoded
+  }
+  return DEFAULT_STATE
+}
+
+export default function App() {
+  // ─── Core state ─────────────────────────────────────────────────────────
+  const [fechaInicio, setFechaInicio] = useState(() => loadInitialState().fechaInicio)
+  const [fechaFin, setFechaFin] = useState(() => loadInitialState().fechaFin)
+  const [entries, setEntries] = useState(() => loadInitialState().entries)
+
+  // Ref to the chart container for image export
+  const chartRef = useRef(null)
+
+  // ─── URL synchronization (debounced) ────────────────────────────────────
+  // We debounce URL writes because during rapid edits (e.g. typing a value)
+  // we don't want to compress + replaceState on every keystroke.
+  const urlSyncTimer = useRef(null)
+
+  useEffect(() => {
+    if (urlSyncTimer.current) clearTimeout(urlSyncTimer.current)
+
+    urlSyncTimer.current = setTimeout(() => {
+      const state = { fechaInicio, fechaFin, entries }
+      const token = encodeState(state)
+      writeUrlToken(token)
+    }, 300) // 300ms debounce
+
+    return () => {
+      if (urlSyncTimer.current) clearTimeout(urlSyncTimer.current)
+    }
+  }, [fechaInicio, fechaFin, entries])
+
+  // ─── Entry mutation handlers ────────────────────────────────────────────
+
+  const handleEntryAdd = useCallback(() => {
+    // Default new entry: first day of the range, Scope type, value 0
+    const defaultDate = fechaInicio || dayjs().format('YYYY-MM-DD')
+    setEntries((prev) => [
+      ...prev,
+      { fecha: defaultDate, tipo: 'Scope', valor: '' },
+    ])
+  }, [fechaInicio])
+
+  const handleEntryChange = useCallback((index, field, value) => {
+    setEntries((prev) => {
+      const updated = [...prev]
+      updated[index] = { ...updated[index], [field]: value }
+      return updated
+    })
+  }, [])
+
+  const handleEntryDelete = useCallback((index) => {
+    setEntries((prev) => prev.filter((_, i) => i !== index))
+  }, [])
+
+  // ─── Render ─────────────────────────────────────────────────────────────
+
+  return (
+    <div className="app-layout">
+      {/* ── Header: Date Filters ──────────────────────────────────────── */}
+      <header className="date-filters">
+        <h1 className="app-title">Burnup Chart Generator</h1>
+        <div className="filter-row">
+          <div className="filter-group">
+            <label htmlFor="fecha-inicio" className="filter-label">
+              Start Date
+            </label>
+            <input
+              id="fecha-inicio"
+              type="date"
+              className="input-date filter-input"
+              value={fechaInicio}
+              onChange={(e) => setFechaInicio(e.target.value)}
+              aria-label="Project start date"
+            />
+          </div>
+          <div className="filter-group">
+            <label htmlFor="fecha-fin" className="filter-label">
+              End Date
+            </label>
+            <input
+              id="fecha-fin"
+              type="date"
+              className="input-date filter-input"
+              value={fechaFin}
+              min={fechaInicio || undefined}
+              onChange={(e) => setFechaFin(e.target.value)}
+              aria-label="Project end date"
+            />
+          </div>
+        </div>
+      </header>
+
+      {/* ── Chart Zone ────────────────────────────────────────────────── */}
+      <section className="chart-section" ref={chartRef}>
+        <BurnupChart
+          fechaInicio={fechaInicio}
+          fechaFin={fechaFin}
+          entries={entries}
+        />
+      </section>
+
+      {/* ── Data Table ────────────────────────────────────────────────── */}
+      <section className="table-section">
+        <DataTable
+          entries={entries}
+          fechaInicio={fechaInicio}
+          fechaFin={fechaFin}
+          onEntryChange={handleEntryChange}
+          onEntryDelete={handleEntryDelete}
+          onEntryAdd={handleEntryAdd}
+        />
+      </section>
+
+      {/* ── Footer: Share ─────────────────────────────────────────────── */}
+      <ShareFooter chartRef={chartRef} />
+    </div>
+  )
+}

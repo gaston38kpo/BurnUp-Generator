@@ -1,65 +1,131 @@
 /**
- * App.css — Layout & component styles for the Burnup Chart Generator
+ * App.css — Complete layout & component styles
  *
- * Design system:
- *   - Uses CSS custom properties from index.css (--bg, --border, --accent, etc.)
- *   - Vertical layout: header → chart → table → footer
- *   - Dark/light mode support via prefers-color-scheme
- *   - Responsive: stacks gracefully on mobile
+ * Uses design tokens from index.css exclusively.
+ * All colors, radii, shadows, and transitions are tokenized.
  */
 
 /* ─── App Layout ────────────────────────────────────────────────────────────── */
 
 .app-layout {
-  max-width: 960px;
+  max-width: 880px;
   margin: 0 auto;
-  padding: 0 24px 32px;
+  padding: 0 20px 48px;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 16px;
 }
 
-/* ─── App Title ─────────────────────────────────────────────────────────────── */
+/* ─── Header ────────────────────────────────────────────────────────────────── */
+
+.app-header {
+  padding: 28px 0 0;
+}
+
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-icon {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: var(--radius-lg);
+}
 
 .app-title {
-  font-size: 28px;
-  font-weight: 700;
-  letter-spacing: -0.5px;
-  margin: 0 0 16px;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  margin: 0;
+  line-height: 1.1;
   color: var(--text-h);
 }
 
-/* ─── Date Filters (Header) ─────────────────────────────────────────────────── */
-
-.date-filters {
-  padding-top: 32px;
+.app-subtitle {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-dim);
+  margin: 0;
+  letter-spacing: 0.2px;
 }
+
+.sprint-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius-full);
+  letter-spacing: 0.3px;
+}
+
+/* ─── Date Filters ──────────────────────────────────────────────────────────── */
 
 .filter-row {
   display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
 }
 
 .filter-group {
-  flex: 1 1 200px;
+  flex: 1 1 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .filter-label {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--text);
+  letter-spacing: 0.8px;
+  color: var(--text-dim);
 }
 
 .filter-input {
   width: 100%;
   box-sizing: border-box;
+}
+
+.filter-arrow {
+  display: flex;
+  align-items: center;
+  padding-bottom: 6px;
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+/* ─── Card (shared) ─────────────────────────────────────────────────────────── */
+
+.card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-base);
+}
+
+.chart-card {
+  padding: 20px 16px 12px;
+  overflow: hidden;
+}
+
+.table-card {
+  padding: 20px;
 }
 
 /* ─── Shared Input Styles ───────────────────────────────────────────────────── */
@@ -68,33 +134,27 @@
 .input-type,
 .input-value {
   font-family: var(--sans);
-  font-size: 14px;
-  padding: 8px 12px;
+  font-size: 13px;
+  padding: 7px 10px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   background: var(--bg);
   color: var(--text-h);
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 
   &:focus {
     outline: none;
-    border-color: var(--accent);
+    border-color: var(--border-focus);
     box-shadow: 0 0 0 3px var(--accent-bg);
   }
 }
 
-.input-type {
-  cursor: pointer;
-  appearance: none;
-  -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b6375' d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  padding-right: 30px;
+.input-date {
+  min-width: 140px;
 }
 
 .input-value {
-  width: 80px;
+  width: 72px;
   text-align: right;
   -moz-appearance: textfield;
 
@@ -105,54 +165,229 @@
   }
 }
 
-/* ─── Chart Section ──────────────────────────────────────────────────────────── */
-
-.chart-section {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 20px 16px;
-  min-height: 200px;
-}
+/* ─── Chart ─────────────────────────────────────────────────────────────────── */
 
 .burnup-chart-container {
   width: 100%;
 }
 
-.chart-placeholder {
+.chart-empty {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 200px;
-  color: var(--text);
-  font-size: 15px;
+  padding: 40px 20px;
+  gap: 12px;
   text-align: center;
 }
 
-/* ─── Section Title ──────────────────────────────────────────────────────────── */
+.chart-empty-icon {
+  width: 120px;
+  height: 80px;
+  opacity: 0.6;
+}
+
+.chart-empty-text {
+  color: var(--text-dim);
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Custom legend */
+.chart-legend {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding-top: 8px;
+}
+
+.chart-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.chart-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.chart-legend-label {
+  line-height: 1;
+}
+
+/* Custom tooltip */
+.chart-tooltip {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 10px 14px;
+  box-shadow: var(--shadow-md);
+  font-size: 12px;
+  min-width: 140px;
+}
+
+.chart-tooltip-date {
+  margin: 0 0 6px;
+  font-weight: 600;
+  font-size: 11px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.chart-tooltip-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 0;
+  color: var(--text-h);
+}
+
+.chart-tooltip-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.chart-tooltip-name {
+  flex: 1;
+  color: var(--text);
+}
+
+.chart-tooltip-value {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Stats Bar ─────────────────────────────────────────────────────────────── */
+
+.stats-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 4px;
+}
+
+.stats-metrics {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.stat-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 0;
+}
+
+.stat-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-dim);
+}
+
+.stat-value {
+  font-size: 22px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+}
+
+.stat-scope .stat-value { color: var(--scope); }
+.stat-completed .stat-value { color: var(--completed); }
+.stat-remaining .stat-value { color: var(--warning); }
+
+.stat-divider {
+  width: 1px;
+  height: 28px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+.progress-track {
+  position: relative;
+  width: 100%;
+  height: 6px;
+  background: var(--border);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width var(--transition-slow), background-color var(--transition-base);
+}
+
+.progress-label {
+  position: absolute;
+  right: 0;
+  top: -18px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.stats-empty {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin: 4px 0 0;
+  text-align: center;
+}
+
+/* ─── Section Title ─────────────────────────────────────────────────────────── */
 
 .section-title {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
   color: var(--text-h);
-  margin: 0 0 12px;
-  letter-spacing: -0.2px;
+  margin: 0 0 10px;
+  letter-spacing: -0.1px;
 }
 
 /* ─── Data Table ────────────────────────────────────────────────────────────── */
 
-.data-table-container {
-  /* container */
+.empty-table {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 20px 24px;
+  gap: 8px;
+  text-align: center;
+}
+
+.empty-table-icon {
+  width: 64px;
+  height: 64px;
+  opacity: 0.4;
+  margin-bottom: 4px;
 }
 
 .empty-table-msg {
+  font-size: 15px;
+  font-weight: 600;
   color: var(--text);
-  font-size: 14px;
-  margin: 0 0 16px;
-  padding: 20px;
-  text-align: center;
-  border: 1px dashed var(--border);
-  border-radius: 8px;
+  margin: 0;
+}
+
+.empty-table-hint {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin: 0;
 }
 
 .table-scroll {
@@ -163,129 +398,250 @@
 .data-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: 13px;
 
   th {
     text-align: left;
-    padding: 8px 12px;
-    font-size: 12px;
-    font-weight: 600;
+    padding: 6px 10px;
+    font-size: 10px;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: var(--text);
-    border-bottom: 2px solid var(--border);
+    letter-spacing: 0.8px;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
     white-space: nowrap;
   }
 
   td {
-    padding: 8px 8px;
+    padding: 6px 8px;
     border-bottom: 1px solid var(--border);
     vertical-align: middle;
   }
 
-  .col-date {
-    width: 160px;
-  }
+  .col-date { width: 150px; }
+  .col-type { width: 120px; }
+  .col-value { width: 80px; }
+  .col-cum { width: 64px; text-align: right; }
+  .col-action { width: 40px; text-align: center; }
 
-  .col-type {
-    width: 150px;
-  }
-
-  .col-value {
-    width: 100px;
-  }
-
-  .col-action {
-    width: 48px;
-    text-align: center;
-  }
-
-  /* Row hover */
   tbody tr {
-    transition: background-color 0.15s;
+    transition: background-color var(--transition-fast);
 
     &:hover {
-      background-color: var(--accent-bg);
+      background-color: var(--bg-alt);
     }
-  }
-
-  /* Type-colored left border on each row */
-  tbody tr {
-    border-left: 3px solid transparent;
   }
 }
 
-/* ─── Delete Button ──────────────────────────────────────────────────────────── */
+/* ─── Type Pill Badge ───────────────────────────────────────────────────────── */
+
+.type-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px 4px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: var(--radius-full);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+  font-family: var(--sans);
+  line-height: 1.2;
+
+  &:hover {
+    filter: brightness(1.05);
+  }
+}
+
+.type-pill-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.type-pill-scope {
+  color: var(--scope);
+  background: var(--scope-bg);
+  border-color: var(--scope-border);
+
+  .type-pill-dot { background-color: var(--scope); }
+}
+
+.type-pill-completed {
+  color: var(--completed);
+  background: var(--completed-bg);
+  border-color: var(--completed-border);
+
+  .type-pill-dot { background-color: var(--completed); }
+}
+
+/* ─── Cumulative Badge ──────────────────────────────────────────────────────── */
+
+.cum-badge {
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-dim);
+  padding: 2px 6px;
+  background: var(--bg-alt);
+  border-radius: var(--radius-sm);
+}
+
+.cum-badge-scope { color: var(--scope); background: var(--scope-bg); }
+.cum-badge-completed { color: var(--completed); background: var(--completed-bg); }
+
+/* ─── Delete Button ─────────────────────────────────────────────────────────── */
 
 .btn-delete {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
   background: transparent;
-  color: #ef4444;
-  font-size: 14px;
+  color: var(--text-dim);
   cursor: pointer;
-  transition: background-color 0.15s, border-color 0.15s;
+  transition: all var(--transition-fast);
+  opacity: 0;
+
+  .data-table tbody tr:hover & {
+    opacity: 1;
+  }
 
   &:hover {
-    background: rgba(239, 68, 68, 0.1);
-    border-color: #ef4444;
+    color: var(--danger);
+    background: var(--danger-bg);
+    border-color: var(--danger-border);
   }
 
   &:focus-visible {
+    opacity: 1;
     outline: 2px solid var(--accent);
     outline-offset: 2px;
   }
 }
 
-/* ─── Type Badge (inline colored indicator) ──────────────────────────────── */
-
-.type-badge {
-  display: inline-flex;
-  border-radius: 6px;
-  padding: 0;
-  background: var(--badge-bg, transparent);
-}
-
-.input-type-inline {
-  border-color: var(--badge-color, var(--border));
-  font-weight: 600;
-}
-
-/* ─── Entry Template Form ──────────────────────────────────────────────────── */
+/* ─── Entry Template Form ───────────────────────────────────────────────────── */
+/* Two-row layout: type selector tabs on top, date+value+add on bottom */
 
 .entry-template {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 12px;
-  padding: 10px 12px;
-  background: var(--bg-alt, var(--code-bg));
+  flex-direction: column;
+  gap: 0;
+  margin-top: 10px;
   border: 1px dashed var(--border);
-  border-radius: 8px;
-  flex-wrap: wrap;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: border-color var(--transition-fast);
+}
 
-  .tpl-input {
-    flex: 0 0 auto;
+.entry-template.tpl-scope { border-color: var(--scope-border); }
+.entry-template.tpl-completed { border-color: var(--completed-border); }
+
+/* Type selector row — tabbed toggle */
+.tpl-type-row {
+  display: flex;
+  gap: 0;
+  background: var(--bg-alt);
+  border-bottom: 1px solid var(--border);
+}
+
+.tpl-type-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 0;
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  color: var(--text-dim);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+
+  &:hover {
+    color: var(--text);
+    background: var(--bg);
+  }
+}
+
+.tpl-type-tab-active {
+  color: var(--text-h);
+  background: var(--bg);
+  box-shadow: inset 0 -2px 0 currentColor;
+
+  &.tpl-scope &,
+  .entry-template.tpl-scope & {
+    color: var(--scope);
   }
 
-  /* Make date and type take reasonable space */
-  .input-date {
-    min-width: 150px;
+  &.tpl-completed &,
+  .entry-template.tpl-completed & {
+    color: var(--completed);
   }
+}
 
-  .input-type {
-    min-width: 120px;
-  }
+.entry-template.tpl-scope .tpl-type-tab-active {
+  color: var(--scope);
+}
 
-  .btn-add-entry {
-    margin-top: 0;
-    margin-left: auto;
-  }
+.entry-template.tpl-completed .tpl-type-tab-active {
+  color: var(--completed);
+}
+
+.tpl-type-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+  opacity: 0.4;
+  transition: opacity var(--transition-fast);
+}
+
+.tpl-type-tab-active .tpl-type-dot {
+  opacity: 1;
+}
+
+.tpl-type-dot-scope { background-color: var(--scope); }
+.tpl-type-dot-completed { background-color: var(--completed); }
+
+/* Fields row — inputs + add button */
+.tpl-fields-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--bg);
+}
+
+.tpl-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tpl-field:first-child {
+  flex: 1 1 0;
+}
+
+.tpl-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-dim);
+}
+
+.tpl-value-input {
+  width: 80px;
 }
 
 /* ─── Add Entry Button ──────────────────────────────────────────────────────── */
@@ -293,25 +649,33 @@
 .btn-add-entry {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
+  justify-content: center;
+  gap: 5px;
+  padding: 7px 16px;
+  height: 34px;
   font-family: var(--sans);
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--accent);
-  background: var(--accent-bg);
-  border: 1px solid var(--accent-border);
-  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: white;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: background-color 0.2s, box-shadow 0.2s, opacity 0.2s;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  flex-shrink: 0;
 
   &:hover:not(:disabled) {
-    background: rgba(170, 59, 255, 0.18);
-    box-shadow: 0 2px 8px rgba(170, 59, 255, 0.15);
+    filter: brightness(1.1);
+    box-shadow: var(--shadow-sm);
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.97);
   }
 
   &:disabled {
-    opacity: 0.4;
+    opacity: 0.35;
     cursor: not-allowed;
   }
 
@@ -321,35 +685,36 @@
   }
 }
 
-/* ─── Share Footer ───────────────────────────────────────────────────────────── */
+/* ─── Share Footer ──────────────────────────────────────────────────────────── */
 
 .share-footer {
-  padding: 24px 0 16px;
+  padding: 16px 0 0;
   border-top: 1px solid var(--border);
   margin-top: 8px;
+  position: relative;
 }
 
 .share-row {
   display: flex;
-  gap: 8px;
-  margin-bottom: 10px;
+  gap: 6px;
   align-items: center;
   flex-wrap: wrap;
 }
 
 .share-url-input {
-  flex: 1 1 300px;
+  flex: 1 1 200px;
   font-family: var(--mono);
-  font-size: 12px;
-  padding: 8px 12px;
+  font-size: 11px;
+  padding: 7px 10px;
   border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--code-bg);
-  color: var(--text);
+  border-radius: var(--radius-md);
+  background: var(--bg-alt);
+  color: var(--text-dim);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   user-select: all;
+  cursor: pointer;
 
   &:focus {
     outline: none;
@@ -357,85 +722,136 @@
   }
 }
 
-.btn-share {
-  flex-shrink: 0;
-  padding: 8px 16px;
+/* ─── Icon Buttons ──────────────────────────────────────────────────────────── */
+
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 12px;
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
-  color: var(--bg);
-  background: var(--accent);
-  border: none;
-  border-radius: 6px;
+  color: var(--text);
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: opacity 0.2s, transform 0.1s;
+  transition: all var(--transition-fast);
   white-space: nowrap;
+  flex-shrink: 0;
 
   &:hover {
-    opacity: 0.9;
-    transform: translateY(-1px);
-  }
-
-  &:active {
-    transform: translateY(0);
+    background: var(--accent-bg);
+    border-color: var(--accent-border);
+    color: var(--accent);
   }
 
   &:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
   }
+
+  svg { flex-shrink: 0; }
 }
 
-.btn-share-image {
-  background: #10b981;
-
+.btn-icon-green {
   &:hover {
-    opacity: 0.9;
+    background: var(--completed-bg);
+    border-color: var(--completed-border);
+    color: var(--completed);
   }
 }
 
-.share-error {
-  font-size: 12px;
-  color: #ef4444;
-  margin-left: 8px;
+.btn-icon-danger {
+  &:hover {
+    background: var(--danger-bg);
+    border-color: var(--danger-border);
+    color: var(--danger);
+  }
 }
 
-/* ─── Responsive ─────────────────────────────────────────────────────────────── */
+/* ─── Toast ─────────────────────────────────────────────────────────────────── */
+
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+  background: var(--text-h);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-lg);
+  animation: toast-in 200ms ease, toast-out 300ms ease 2200ms forwards;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes toast-out {
+  to {
+    opacity: 0;
+    transform: translateX(-50%) translateY(8px);
+  }
+}
+
+/* ─── Responsive ────────────────────────────────────────────────────────────── */
 
 @media (max-width: 640px) {
   .app-layout {
-    padding: 0 16px 24px;
-    gap: 16px;
-  }
-
-  .app-title {
-    font-size: 22px;
-  }
-
-  .filter-row {
-    flex-direction: column;
+    padding: 0 12px 32px;
     gap: 12px;
   }
 
-  .data-table .col-date,
-  .data-table .col-type {
-    width: auto;
+  .app-title { font-size: 20px; }
+
+  .filter-row {
+    flex-direction: column;
+    gap: 8px;
   }
+
+  .filter-arrow { display: none; }
+
+  .chart-card { padding: 12px 8px 8px; }
+  .table-card { padding: 14px 12px; }
+
+  .data-table .col-date,
+  .data-table .col-type { width: auto; }
 
   .data-table td,
-  .data-table th {
-    padding: 6px 4px;
+  .data-table th { padding: 5px 4px; }
+
+  .input-value,
+  .tpl-value-input { width: 60px; }
+
+  .stats-metrics { gap: 0; }
+  .stat-value { font-size: 18px; }
+
+  .share-url-input { font-size: 10px; }
+
+  .btn-icon span { display: none; }
+
+  .sprint-badge { display: none; }
+
+  .entry-template .tpl-fields-row {
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
-  .input-value {
-    width: 64px;
+  .tpl-field:first-child {
+    flex: 1 1 100%;
   }
-
-  .chart-section {
-    padding: 12px 8px;
-  }
-
-.share-url-input {
-  font-size: 11px;
-}
 }

@@ -1,26 +1,64 @@
 /**
- * index.css — Global styles & CSS custom properties
+ * index.css — Global design tokens & base styles
  *
- * Design tokens for the Burnup Chart Generator.
- * Supports light/dark mode via prefers-color-scheme.
+ * Design system for the Burnup Chart Generator.
+ * All colors, radii, transitions, and shadows are tokenized here.
+ * Components reference these tokens — never raw values.
  */
 
 :root {
+  /* ─── Semantic Colors ─────────────────────────────────────────────────── */
   --text: #6b7280;
   --text-h: #111827;
+  --text-dim: #9ca3af;
   --bg: #ffffff;
   --bg-alt: #f9fafb;
+  --bg-elevated: #ffffff;
   --border: #e5e7eb;
+  --border-focus: #6366f1;
   --code-bg: #f3f4f6;
+
+  /* Brand / type colors */
   --accent: #6366f1;
   --accent-bg: rgba(99, 102, 241, 0.08);
-  --accent-border: rgba(99, 102, 241, 0.4);
-  --shadow: rgba(0, 0, 0, 0.06) 0 1px 3px 0, rgba(0, 0, 0, 0.04) 0 1px 2px 0;
+  --accent-border: rgba(99, 102, 241, 0.35);
+  --scope: #6366f1;
+  --scope-bg: rgba(99, 102, 241, 0.08);
+  --scope-border: rgba(99, 102, 241, 0.25);
+  --completed: #10b981;
+  --completed-bg: rgba(16, 185, 129, 0.08);
+  --completed-border: rgba(16, 185, 129, 0.25);
+  --ideal: #94a3b8;
+  --ideal-bg: rgba(148, 163, 184, 0.06);
+  --danger: #ef4444;
+  --danger-bg: rgba(239, 68, 68, 0.08);
+  --danger-border: rgba(239, 68, 68, 0.25);
+  --warning: #f59e0b;
+  --warning-bg: rgba(245, 158, 11, 0.08);
 
+  /* ─── Radii ────────────────────────────────────────────────────────────── */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+  --radius-full: 9999px;
+
+  /* ─── Shadows ──────────────────────────────────────────────────────────── */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.04);
+
+  /* ─── Transitions ──────────────────────────────────────────────────────── */
+  --transition-fast: 120ms ease;
+  --transition-base: 200ms ease;
+  --transition-slow: 350ms ease;
+
+  /* ─── Typography ───────────────────────────────────────────────────────── */
   --sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --heading: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --mono: ui-monospace, 'Cascadia Code', 'Fira Code', Consolas, monospace;
 
+  /* ─── Base ─────────────────────────────────────────────────────────────── */
   font: 16px/1.5 var(--sans);
   letter-spacing: 0.01em;
   color-scheme: light dark;
@@ -30,22 +68,43 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --text: #9ca3af;
     --text-h: #f3f4f6;
-    --bg: #0f1117;
-    --bg-alt: #1a1b23;
-    --border: #2e303a;
-    --code-bg: #1a1b23;
+    --text-dim: #6b7280;
+    --bg: #0c0d12;
+    --bg-alt: #14151d;
+    --bg-elevated: #1a1b25;
+    --border: #262836;
+    --border-focus: #818cf8;
+    --code-bg: #14151d;
     --accent: #818cf8;
-    --accent-bg: rgba(129, 140, 248, 0.12);
-    --accent-border: rgba(129, 140, 248, 0.4);
-    --shadow: rgba(0, 0, 0, 0.3) 0 1px 3px 0, rgba(0, 0, 0, 0.2) 0 1px 2px 0;
+    --accent-bg: rgba(129, 140, 248, 0.1);
+    --accent-border: rgba(129, 140, 248, 0.35);
+    --scope: #818cf8;
+    --scope-bg: rgba(129, 140, 248, 0.1);
+    --scope-border: rgba(129, 140, 248, 0.3);
+    --completed: #34d399;
+    --completed-bg: rgba(52, 211, 153, 0.1);
+    --completed-border: rgba(52, 211, 153, 0.3);
+    --ideal: #64748b;
+    --ideal-bg: rgba(100, 116, 139, 0.08);
+    --danger: #f87171;
+    --danger-bg: rgba(248, 113, 113, 0.1);
+    --danger-border: rgba(248, 113, 113, 0.3);
+    --warning: #fbbf24;
+    --warning-bg: rgba(251, 191, 36, 0.1);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.15);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.2);
   }
 }
+
+/* ─── Reset & Base ──────────────────────────────────────────────────────────── */
 
 *,
 *::before,
@@ -60,4 +119,29 @@ body {
 
 #root {
   min-height: 100vh;
+}
+
+/* Selection color */
+::selection {
+  background: var(--accent-bg);
+  color: var(--text-h);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-dim);
 }

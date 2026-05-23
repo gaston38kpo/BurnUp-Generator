@@ -14,6 +14,7 @@ import { useCallback } from 'react'
 
 export default function DataTable({
   entries,
+  newEntryId,
   fechaInicio,
   fechaFin,
   onEntryChange,
@@ -55,7 +56,7 @@ export default function DataTable({
             </thead>
             <tbody>
         {entries.map((entry) => (
-          <tr key={entry.originalIndex}>
+          <tr key={entry.originalIndex} className={entry.id === newEntryId ? 'row-new' : ''}>
             <td className="col-date">
               <input
                 type="date"

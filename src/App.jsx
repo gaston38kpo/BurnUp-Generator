@@ -50,10 +50,17 @@ function loadInitialState() {
 }
 
 export default function App() {
-  // ─── Core state ─────────────────────────────────────────────────────────
+// ─── Core state ─────────────────────────────────────────────────────────
   const [fechaInicio, setFechaInicio] = useState(() => loadInitialState().fechaInicio)
   const [fechaFin, setFechaFin] = useState(() => loadInitialState().fechaFin)
   const [entries, setEntries] = useState(() => loadInitialState().entries)
+
+  // Stable unique id generator for new entries
+  const nextId = useRef(entries.length > 0 ? Math.max(...entries.map(e => e.id || 0)) + 1 : 1)
+
+  // Track which entry was most recently added (and not yet "committed")
+  // Cleared when the user modifies any field of that entry.
+  const [newEntryId, setNewEntryId] = useState(null)
 
   // Ref to the chart container for image export
   const chartRef = useRef(null)
@@ -91,24 +98,34 @@ export default function App() {
   // the correct element in the source-of-truth `entries` array.
 
   const handleEntryAdd = useCallback(() => {
+    const id = nextId.current++
     const defaultDate = fechaInicio || dayjs().format('YYYY-MM-DD')
     setEntries((prev) => [
       ...prev,
-      { fecha: defaultDate, tipo: 'Scope', valor: '' },
+      { id, fecha: defaultDate, tipo: 'Scope', valor: '' },
     ])
+    setNewEntryId(id)
   }, [fechaInicio])
 
   const handleEntryChange = useCallback((originalIndex, field, value) => {
     setEntries((prev) => {
       const updated = [...prev]
       updated[originalIndex] = { ...updated[originalIndex], [field]: value }
+      // First edit to the newly added entry clears the highlight
+      if (updated[originalIndex].id === newEntryId) {
+        setNewEntryId(null)
+      }
       return updated
     })
-  }, [])
+  }, [newEntryId])
 
   const handleEntryDelete = useCallback((originalIndex) => {
-    setEntries((prev) => prev.filter((_, i) => i !== originalIndex))
-  }, [])
+    setEntries((prev) => {
+      const deleted = prev[originalIndex]
+      if (deleted?.id === newEntryId) setNewEntryId(null)
+      return prev.filter((_, i) => i !== originalIndex)
+    })
+  }, [newEntryId])
 
   // ─── Render ─────────────────────────────────────────────────────────────
 
@@ -161,6 +178,7 @@ export default function App() {
       <section className="table-section">
       <DataTable
         entries={sortedEntries}
+        newEntryId={newEntryId}
         fechaInicio={fechaInicio}
         fechaFin={fechaFin}
         onEntryChange={handleEntryChange}

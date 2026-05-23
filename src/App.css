@@ -208,6 +208,22 @@
       background-color: var(--accent-bg);
     }
   }
+
+  /* Newly added row — highlighted until the user edits it */
+  tbody tr.row-new {
+    background-color: var(--accent-bg);
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+    border-radius: 4px;
+    animation: row-new-pulse 1.5s ease-in-out 1;
+
+    td:first-child {
+      border-radius: 4px 0 0 4px;
+    }
+    td:last-child {
+      border-radius: 0 4px 4px 0;
+    }
+  }
 }
 
 /* ─── Delete Button ──────────────────────────────────────────────────────────── */
@@ -380,7 +396,21 @@
     padding: 12px 8px;
   }
 
-  .share-url-input {
-    font-size: 11px;
+.share-url-input {
+  font-size: 11px;
+}
+}
+
+/* ─── New-entry row pulse animation ──────────────────────────────────────────── */
+
+@keyframes row-new-pulse {
+  0% {
+    background-color: rgba(99, 102, 241, 0.25);
+  }
+  50% {
+    background-color: var(--accent-bg);
+  }
+  100% {
+    background-color: var(--accent-bg);
   }
 }

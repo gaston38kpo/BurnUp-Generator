@@ -21,7 +21,7 @@
  *   3. Debounced URL writes to avoid thrashing during rapid edits
  */
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import dayjs from 'dayjs'
 import BurnupChart from './components/BurnupChart'
 import DataTable from './components/DataTable'
@@ -77,10 +77,20 @@ export default function App() {
     }
   }, [fechaInicio, fechaFin, entries])
 
+  // ─── Sorted entries for display (newest date first) ────────────────────
+  // The source of truth is `entries` (unsorted). We derive a sorted view
+  // for the DataTable so edits/deletes map back to the original indices.
+  const sortedEntries = useMemo(() => {
+    return entries
+      .map((entry, originalIndex) => ({ ...entry, originalIndex }))
+      .sort((a, b) => b.fecha.localeCompare(a.fecha))
+  }, [entries])
+
   // ─── Entry mutation handlers ────────────────────────────────────────────
+  // These receive `originalIndex` from the sorted view, so they mutate
+  // the correct element in the source-of-truth `entries` array.
 
   const handleEntryAdd = useCallback(() => {
-    // Default new entry: first day of the range, Scope type, value 0
     const defaultDate = fechaInicio || dayjs().format('YYYY-MM-DD')
     setEntries((prev) => [
       ...prev,
@@ -88,16 +98,16 @@ export default function App() {
     ])
   }, [fechaInicio])
 
-  const handleEntryChange = useCallback((index, field, value) => {
+  const handleEntryChange = useCallback((originalIndex, field, value) => {
     setEntries((prev) => {
       const updated = [...prev]
-      updated[index] = { ...updated[index], [field]: value }
+      updated[originalIndex] = { ...updated[originalIndex], [field]: value }
       return updated
     })
   }, [])
 
-  const handleEntryDelete = useCallback((index) => {
-    setEntries((prev) => prev.filter((_, i) => i !== index))
+  const handleEntryDelete = useCallback((originalIndex) => {
+    setEntries((prev) => prev.filter((_, i) => i !== originalIndex))
   }, [])
 
   // ─── Render ─────────────────────────────────────────────────────────────
@@ -149,14 +159,14 @@ export default function App() {
 
       {/* ── Data Table ────────────────────────────────────────────────── */}
       <section className="table-section">
-        <DataTable
-          entries={entries}
-          fechaInicio={fechaInicio}
-          fechaFin={fechaFin}
-          onEntryChange={handleEntryChange}
-          onEntryDelete={handleEntryDelete}
-          onEntryAdd={handleEntryAdd}
-        />
+      <DataTable
+        entries={sortedEntries}
+        fechaInicio={fechaInicio}
+        fechaFin={fechaFin}
+        onEntryChange={handleEntryChange}
+        onEntryDelete={handleEntryDelete}
+        onEntryAdd={handleEntryAdd}
+      />
       </section>
 
       {/* ── Footer: Share ─────────────────────────────────────────────── */}

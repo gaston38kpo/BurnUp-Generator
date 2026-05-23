@@ -22,7 +22,6 @@
  */
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import dayjs from 'dayjs'
 import BurnupChart from './components/BurnupChart'
 import DataTable from './components/DataTable'
 import ShareFooter from './components/ShareFooter'
@@ -54,13 +53,6 @@ export default function App() {
   const [fechaInicio, setFechaInicio] = useState(() => loadInitialState().fechaInicio)
   const [fechaFin, setFechaFin] = useState(() => loadInitialState().fechaFin)
   const [entries, setEntries] = useState(() => loadInitialState().entries)
-
-  // Stable unique id generator for new entries
-  const nextId = useRef(entries.length > 0 ? Math.max(...entries.map(e => e.id || 0)) + 1 : 1)
-
-  // Track which entry was most recently added (and not yet "committed")
-  // Cleared when the user modifies any field of that entry.
-  const [newEntryId, setNewEntryId] = useState(null)
 
   // Ref to the chart container for image export
   const chartRef = useRef(null)
@@ -97,35 +89,25 @@ export default function App() {
   // These receive `originalIndex` from the sorted view, so they mutate
   // the correct element in the source-of-truth `entries` array.
 
-  const handleEntryAdd = useCallback(() => {
-    const id = nextId.current++
-    const defaultDate = fechaInicio || dayjs().format('YYYY-MM-DD')
+  // onEntryAdd receives the filled template values (fecha, tipo, valor)
+  const handleEntryAdd = useCallback((fecha, tipo, valor) => {
     setEntries((prev) => [
       ...prev,
-      { id, fecha: defaultDate, tipo: 'Scope', valor: '' },
+      { fecha, tipo, valor },
     ])
-    setNewEntryId(id)
-  }, [fechaInicio])
+  }, [])
 
   const handleEntryChange = useCallback((originalIndex, field, value) => {
     setEntries((prev) => {
       const updated = [...prev]
       updated[originalIndex] = { ...updated[originalIndex], [field]: value }
-      // First edit to the newly added entry clears the highlight
-      if (updated[originalIndex].id === newEntryId) {
-        setNewEntryId(null)
-      }
       return updated
     })
-  }, [newEntryId])
+  }, [])
 
   const handleEntryDelete = useCallback((originalIndex) => {
-    setEntries((prev) => {
-      const deleted = prev[originalIndex]
-      if (deleted?.id === newEntryId) setNewEntryId(null)
-      return prev.filter((_, i) => i !== originalIndex)
-    })
-  }, [newEntryId])
+    setEntries((prev) => prev.filter((_, i) => i !== originalIndex))
+  }, [])
 
   // ─── Render ─────────────────────────────────────────────────────────────
 
@@ -178,7 +160,6 @@ export default function App() {
       <section className="table-section">
       <DataTable
         entries={sortedEntries}
-        newEntryId={newEntryId}
         fechaInicio={fechaInicio}
         fechaFin={fechaFin}
         onEntryChange={handleEntryChange}

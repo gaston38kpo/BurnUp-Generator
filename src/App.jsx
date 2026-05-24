@@ -59,7 +59,7 @@ const DEFAULT_STATE = {
     entries: [],
     dateFrom: "",
     dateTo: "",
-    chartConfig: { scopeType: "linear", completedType: "linear" },
+    chartConfig: { scopeType: "linear", completedType: "linear", scopeFill: true, completedFill: true },
 };
 
 function loadInitialState() {
@@ -275,7 +275,7 @@ export default function App() {
         setEntries([]);
         setDateFrom("");
         setDateTo("");
-        setChartConfig({ scopeType: "linear", completedType: "linear" });
+        setChartConfig({ scopeType: "linear", completedType: "linear", scopeFill: true, completedFill: true });
         setV1Error(false);
     }, []);
 
@@ -296,12 +296,14 @@ export default function App() {
             setEntries(decoded.entries);
             setDateFrom(decoded.dateFrom || "");
             setDateTo(decoded.dateTo || "");
-            setChartConfig(
-                decoded.chartConfig || {
-                    scopeType: "linear",
-                    completedType: "linear",
-                },
-            );
+    setChartConfig(
+      decoded.chartConfig || {
+        scopeType: "linear",
+        completedType: "linear",
+        scopeFill: true,
+        completedFill: true,
+      },
+    );
             setV1Error(false);
         },
         [snapshots],

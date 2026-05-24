@@ -2,9 +2,9 @@
  * ChartSettings.jsx — Gear button popover for chart line type configuration
  *
  * Shows a small gear icon in the top-right of the chart.
- * On click, opens a popover with type selectors for Scope and Completed lines:
- * - linear (smooth interpolation)
- * - stepAfter (step function, hold value until next point)
+ * On click, opens a popover with per-line settings for Scope and Completed:
+ * - Type: linear / stepAfter
+ * - Area fill: on / off
  */
 import { useState, useRef, useEffect, useCallback } from 'react'
 
@@ -50,44 +50,60 @@ export default function ChartSettings({ chartConfig, onChartConfigChange }) {
       </button>
       {open && (
         <div className="chart-settings-popover" ref={popoverRef}>
-          <div className="chart-settings-section">
-            <span className="chart-settings-label">
-              <span className="chart-settings-dot chart-settings-dot-scope" />
-              Scope
-            </span>
-            <div className="chart-settings-options">
-              {LINE_TYPES.map((t) => (
-                <button
-                  key={t.value}
-                  className={`chart-settings-opt${chartConfig.scopeType === t.value ? ' chart-settings-opt-active' : ''}`}
-                  onClick={() => { onChartConfigChange('scopeType', t.value) }}
-                  title={t.desc}
-                >
-                  {t.label}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="chart-settings-section">
-            <span className="chart-settings-label">
-              <span className="chart-settings-dot chart-settings-dot-completed" />
-              Completed
-            </span>
-            <div className="chart-settings-options">
-              {LINE_TYPES.map((t) => (
-                <button
-                  key={t.value}
-                  className={`chart-settings-opt${chartConfig.completedType === t.value ? ' chart-settings-opt-active' : ''}`}
-                  onClick={() => { onChartConfigChange('completedType', t.value) }}
-                  title={t.desc}
-                >
-                  {t.label}
-                </button>
-              ))}
-            </div>
-          </div>
+          <LineConfig
+            label="Scope"
+            dotClass="chart-settings-dot-scope"
+            typeKey="scopeType"
+            fillKey="scopeFill"
+            chartConfig={chartConfig}
+            onChartConfigChange={onChartConfigChange}
+          />
+          <LineConfig
+            label="Completed"
+            dotClass="chart-settings-dot-completed"
+            typeKey="completedType"
+            fillKey="completedFill"
+            chartConfig={chartConfig}
+            onChartConfigChange={onChartConfigChange}
+          />
         </div>
       )}
+    </div>
+  )
+}
+
+function LineConfig({ label, dotClass, typeKey, fillKey, chartConfig, onChartConfigChange }) {
+  return (
+    <div className="chart-settings-section">
+      <span className="chart-settings-label">
+        <span className={`chart-settings-dot ${dotClass}`} />
+        {label}
+      </span>
+      <div className="chart-settings-row">
+        <div className="chart-settings-options">
+          {LINE_TYPES.map((t) => (
+            <button
+              key={t.value}
+              className={`chart-settings-opt${chartConfig[typeKey] === t.value ? ' chart-settings-opt-active' : ''}`}
+              onClick={() => onChartConfigChange(typeKey, t.value)}
+              title={t.desc}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+        <button
+          className={`chart-settings-fill${chartConfig[fillKey] !== false ? ' chart-settings-fill-on' : ''}`}
+          onClick={() => onChartConfigChange(fillKey, chartConfig[fillKey] === false)}
+          title={chartConfig[fillKey] !== false ? 'Hide area fill' : 'Show area fill'}
+          aria-label={chartConfig[fillKey] !== false ? 'Area fill on' : 'Area fill off'}
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2 12L5 6L8 9L11 4L14 8V12H2Z" fill="currentColor" opacity={chartConfig[fillKey] !== false ? 0.4 : 0.1}/>
+            <path d="M2 12L5 6L8 9L11 4L14 8" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" fill="none"/>
+          </svg>
+        </button>
+      </div>
     </div>
   )
 }

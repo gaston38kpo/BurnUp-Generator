@@ -71,11 +71,13 @@ function stateToCompact(state) {
     )
   }
 
-  // Chart config: 0 = linear, 1 = stepAfter
+  // Chart config: 0 = linear, 1 = stepAfter; then 0 = no fill, 1 = fill
   const cc = state.chartConfig || {}
   compact.push(null) // chartConfig sentinel
   compact.push(cc.scopeType === 'stepAfter' ? 1 : 0)
   compact.push(cc.completedType === 'stepAfter' ? 1 : 0)
+  compact.push(cc.scopeFill !== false ? 1 : 0)
+  compact.push(cc.completedFill !== false ? 1 : 0)
 
   return compact
 }
@@ -132,12 +134,16 @@ function compactToState(compact) {
   }
 
   // Parse chartConfig for v5+
-  let chartConfig = { scopeType: 'linear', completedType: 'linear' }
+  let chartConfig = { scopeType: 'linear', completedType: 'linear', scopeFill: true, completedFill: true }
   if (version >= 5 && i < compact.length && compact[i] === null) {
     i++ // skip chartConfig sentinel
     if (i + 1 < compact.length) {
       chartConfig.scopeType = compact[i] === 1 ? 'stepAfter' : 'linear'
       chartConfig.completedType = compact[i + 1] === 1 ? 'stepAfter' : 'linear'
+    }
+    if (i + 3 < compact.length) {
+      chartConfig.scopeFill = compact[i + 2] !== 0
+      chartConfig.completedFill = compact[i + 3] !== 0
     }
   }
 

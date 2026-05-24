@@ -143,31 +143,31 @@ export default function BurnupChart({ sprints, entries, chartConfig, onChartConf
 
           <Legend content={<CustomLegend />} />
 
-          {/* Scope area + line */}
-          <Area
-            type={chartConfig.scopeType}
-            dataKey="scope"
-            name="Scope"
-            stroke="var(--scope)"
-            strokeWidth={2.5}
-            fill="url(#gradScope)"
-            dot={false}
-            activeDot={{ r: 4, stroke: 'var(--scope)', strokeWidth: 2, fill: 'var(--bg)' }}
-            isAnimationActive={false}
-          />
+      {/* Scope area + line */}
+      <Area
+        type={chartConfig.scopeType}
+        dataKey="scope"
+        name="Scope"
+        stroke="var(--scope)"
+        strokeWidth={2.5}
+        fill={chartConfig.scopeFill !== false ? 'url(#gradScope)' : 'none'}
+        dot={false}
+        activeDot={{ r: 4, stroke: 'var(--scope)', strokeWidth: 2, fill: 'var(--bg)' }}
+        isAnimationActive={false}
+      />
 
-          {/* Completed area + line */}
-          <Area
-            type={chartConfig.completedType}
-            dataKey="completed"
-            name="Completed"
-            stroke="var(--completed)"
-            strokeWidth={2.5}
-            fill="url(#gradCompleted)"
-            dot={false}
-            activeDot={{ r: 4, stroke: 'var(--completed)', strokeWidth: 2, fill: 'var(--bg)' }}
-            isAnimationActive={false}
-          />
+      {/* Completed area + line */}
+      <Area
+        type={chartConfig.completedType}
+        dataKey="completed"
+        name="Completed"
+        stroke="var(--completed)"
+        strokeWidth={2.5}
+        fill={chartConfig.completedFill !== false ? 'url(#gradCompleted)' : 'none'}
+        dot={false}
+        activeDot={{ r: 4, stroke: 'var(--completed)', strokeWidth: 2, fill: 'var(--bg)' }}
+        isAnimationActive={false}
+      />
 
           {/* Ideal line */}
           <Line

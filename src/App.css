@@ -417,6 +417,37 @@
   background: var(--accent-bg);
 }
 
+.chart-settings-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chart-settings-fill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  color: var(--text-dim);
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+
+  &:hover {
+    color: var(--text);
+    background: var(--bg);
+  }
+}
+
+.chart-settings-fill-on {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
 .chart-empty {
   display: flex;
   flex-direction: column;

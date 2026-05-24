@@ -31,10 +31,10 @@ import ShareFooter from "./components/ShareFooter";
 import Accordion from "./components/Accordion";
 import SnapshotHistory from "./components/SnapshotHistory";
 import {
-  encodeState,
-  decodeState,
-  readUrlToken,
-  writeUrlToken,
+    encodeState,
+    decodeState,
+    readUrlToken,
+    writeUrlToken,
 } from "./lib/urlState";
 import "./App.css";
 
@@ -53,13 +53,13 @@ function buildSprints(count) {
 const DEFAULT_SPRINT_COUNT = 1;
 
 const DEFAULT_STATE = {
-  title: "",
-  sprintCount: DEFAULT_SPRINT_COUNT,
-  sprints: buildSprints(DEFAULT_SPRINT_COUNT),
-  entries: [],
-  dateFrom: "",
-  dateTo: "",
-  chartConfig: { scopeType: "linear", completedType: "linear" },
+    title: "",
+    sprintCount: DEFAULT_SPRINT_COUNT,
+    sprints: buildSprints(DEFAULT_SPRINT_COUNT),
+    entries: [],
+    dateFrom: "",
+    dateTo: "",
+    chartConfig: { scopeType: "linear", completedType: "linear" },
 };
 
 function loadInitialState() {
@@ -72,18 +72,19 @@ function loadInitialState() {
         if (decoded && decoded.sprints && decoded.entries) {
             // Derive sprintCount from loaded sprints (total - 1 for Sprint 0)
             const sprintCount = Math.max(1, decoded.sprints.length - 1);
-        return {
-          state: {
-            title: decoded.title || "",
-            sprintCount,
-            sprints: decoded.sprints,
-            entries: decoded.entries,
-            dateFrom: decoded.dateFrom || "",
-            dateTo: decoded.dateTo || "",
-            chartConfig: decoded.chartConfig || DEFAULT_STATE.chartConfig,
-          },
-          v1Error: false,
-        };
+            return {
+                state: {
+                    title: decoded.title || "",
+                    sprintCount,
+                    sprints: decoded.sprints,
+                    entries: decoded.entries,
+                    dateFrom: decoded.dateFrom || "",
+                    dateTo: decoded.dateTo || "",
+                    chartConfig:
+                        decoded.chartConfig || DEFAULT_STATE.chartConfig,
+                },
+                v1Error: false,
+            };
         }
     }
     return { state: DEFAULT_STATE, v1Error: false };
@@ -97,46 +98,59 @@ export default function App() {
     const [entries, setEntries] = useState(initial.state.entries);
     const [dateFrom, setDateFrom] = useState(initial.state.dateFrom);
     const [dateTo, setDateTo] = useState(initial.state.dateTo);
-  const [chartConfig, setChartConfig] = useState(initial.state.chartConfig);
-  const [v1Error, setV1Error] = useState(initial.v1Error);
+    const [chartConfig, setChartConfig] = useState(initial.state.chartConfig);
+    const [v1Error, setV1Error] = useState(initial.v1Error);
 
-  // ─── Session-only snapshot history ────────────────────────────────────
-  const [snapshots, setSnapshots] = useState([]);
+    // ─── Session-only snapshot history ────────────────────────────────────
+    const [snapshots, setSnapshots] = useState([]);
 
-  const chartRef = useRef(null);
+    const chartRef = useRef(null);
 
-  // ─── URL synchronization (debounced) ────────────────────────────────────
-  const urlSyncTimer = useRef(null);
-  const lastSnapshotUrl = useRef(null);
+    // ─── URL synchronization (debounced) ────────────────────────────────────
+    const urlSyncTimer = useRef(null);
+    const lastSnapshotUrl = useRef(null);
 
-  useEffect(() => {
-    if (urlSyncTimer.current) clearTimeout(urlSyncTimer.current);
+    useEffect(() => {
+        if (urlSyncTimer.current) clearTimeout(urlSyncTimer.current);
 
-    urlSyncTimer.current = setTimeout(() => {
-      const state = { title, sprints, entries, dateFrom, dateTo, chartConfig };
-      const token = encodeState(state);
-      writeUrlToken(token);
+        urlSyncTimer.current = setTimeout(() => {
+            const state = {
+                title,
+                sprints,
+                entries,
+                dateFrom,
+                dateTo,
+                chartConfig,
+            };
+            const token = encodeState(state);
+            writeUrlToken(token);
 
-      // Track snapshot (session-only, max 10)
-      const currentUrl = window.location.href;
-      if (currentUrl !== lastSnapshotUrl.current) {
-        lastSnapshotUrl.current = currentUrl;
-        const now = new Date();
-        const time = now.toLocaleString(undefined, {
-          month: 'short', day: 'numeric',
-          hour: '2-digit', minute: '2-digit', second: '2-digit',
-        });
-        setSnapshots((prev) => {
-          const next = [{ url: currentUrl, time, title: state.title }, ...prev];
-          return next.slice(0, 10);
-        });
-      }
-    }, 300);
+            // Track snapshot (session-only, max 10)
+            const currentUrl = window.location.href;
+            if (currentUrl !== lastSnapshotUrl.current) {
+                lastSnapshotUrl.current = currentUrl;
+                const now = new Date();
+                const time = now.toLocaleString(undefined, {
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                });
+                setSnapshots((prev) => {
+                    const next = [
+                        { url: currentUrl, time, title: state.title },
+                        ...prev,
+                    ];
+                    return next.slice(0, 10);
+                });
+            }
+        }, 300);
 
-    return () => {
-      if (urlSyncTimer.current) clearTimeout(urlSyncTimer.current);
-    };
-  }, [title, sprints, entries, dateFrom, dateTo, chartConfig]);
+        return () => {
+            if (urlSyncTimer.current) clearTimeout(urlSyncTimer.current);
+        };
+    }, [title, sprints, entries, dateFrom, dateTo, chartConfig]);
 
     // ─── Sprint count management ───────────────────────────────────────────
     const handleSprintCountChange = useCallback((newCount) => {
@@ -254,42 +268,50 @@ export default function App() {
         setEntries((prev) => prev.filter((_, i) => i !== originalIndex));
     }, []);
 
-  const handleClear = useCallback(() => {
-    setTitle("");
-    setSprintCount(DEFAULT_SPRINT_COUNT);
-    setSprints(buildSprints(DEFAULT_SPRINT_COUNT));
-    setEntries([]);
-    setDateFrom("");
-    setDateTo("");
-    setChartConfig({ scopeType: "linear", completedType: "linear" });
-    setV1Error(false);
-  }, []);
+    const handleClear = useCallback(() => {
+        setTitle("");
+        setSprintCount(DEFAULT_SPRINT_COUNT);
+        setSprints(buildSprints(DEFAULT_SPRINT_COUNT));
+        setEntries([]);
+        setDateFrom("");
+        setDateTo("");
+        setChartConfig({ scopeType: "linear", completedType: "linear" });
+        setV1Error(false);
+    }, []);
 
-  // ─── Restore snapshot ─────────────────────────────────────────────────
-  const handleRestoreSnapshot = useCallback((index) => {
-    const snap = snapshots[index];
-    if (!snap) return;
-    const params = new URLSearchParams(new URL(snap.url).search);
-    const token = params.get("data");
-    if (!token) return;
-    const decoded = decodeState(token);
-    if (!decoded?.sprints) return;
-    const sprintCount = Math.max(1, decoded.sprints.length - 1);
-    setTitle(decoded.title || "");
-    setSprintCount(sprintCount);
-    setSprints(decoded.sprints);
-    setEntries(decoded.entries);
-    setDateFrom(decoded.dateFrom || "");
-    setDateTo(decoded.dateTo || "");
-    setChartConfig(decoded.chartConfig || { scopeType: "linear", completedType: "linear" });
-    setV1Error(false);
-  }, [snapshots]);
+    // ─── Restore snapshot ─────────────────────────────────────────────────
+    const handleRestoreSnapshot = useCallback(
+        (index) => {
+            const snap = snapshots[index];
+            if (!snap) return;
+            const params = new URLSearchParams(new URL(snap.url).search);
+            const token = params.get("data");
+            if (!token) return;
+            const decoded = decodeState(token);
+            if (!decoded?.sprints) return;
+            const sprintCount = Math.max(1, decoded.sprints.length - 1);
+            setTitle(decoded.title || "");
+            setSprintCount(sprintCount);
+            setSprints(decoded.sprints);
+            setEntries(decoded.entries);
+            setDateFrom(decoded.dateFrom || "");
+            setDateTo(decoded.dateTo || "");
+            setChartConfig(
+                decoded.chartConfig || {
+                    scopeType: "linear",
+                    completedType: "linear",
+                },
+            );
+            setV1Error(false);
+        },
+        [snapshots],
+    );
 
-  const handleChartConfigChange = useCallback((key, value) => {
-    setChartConfig((prev) => ({ ...prev, [key]: value }));
-  }, []);
+    const handleChartConfigChange = useCallback((key, value) => {
+        setChartConfig((prev) => ({ ...prev, [key]: value }));
+    }, []);
 
-  // ─── Render ─────────────────────────────────────────────────────────────
+    // ─── Render ─────────────────────────────────────────────────────────────
 
     return (
         <div className='app-layout'>
@@ -466,32 +488,49 @@ export default function App() {
                 )}
             </header>
 
-            {/* ── Chart Zone ────────────────────────────────────────────────── */}
-      <section className='card chart-card' ref={chartRef}>
-        <BurnupChart sprints={sprints} entries={entries} chartConfig={chartConfig} onChartConfigChange={handleChartConfigChange} />
-            </section>
-
             {/* ── Stats Bar ────────────────────────────────────────────────── */}
             <StatsBar entries={entries} sprints={sprints} />
 
-    {/* ── Data Table (accordion) ──────────────────────────────────── */}
-    <Accordion title="Data Entries" badge={entries.length || undefined} padded={false}>
-      <DataTable
-        sprints={sprints}
-        entries={entries}
-        onEntryChange={handleEntryChange}
-        onEntryDelete={handleEntryDelete}
-        onEntryAdd={handleEntryAdd}
-      />
-    </Accordion>
+            {/* ── Chart Zone ────────────────────────────────────────────────── */}
+            <section className='card chart-card' ref={chartRef}>
+                <BurnupChart
+                    sprints={sprints}
+                    entries={entries}
+                    chartConfig={chartConfig}
+                    onChartConfigChange={handleChartConfigChange}
+                />
+            </section>
 
-    {/* ── Footer: Share ─────────────────────────────────────────────── */}
-    <ShareFooter chartRef={chartRef} onClear={handleClear} />
+            {/* ── Data Table (accordion) ──────────────────────────────────── */}
+            <Accordion
+                title='Data Entries'
+                badge={entries.length || undefined}
+                padded={false}
+            >
+                <DataTable
+                    sprints={sprints}
+                    entries={entries}
+                    onEntryChange={handleEntryChange}
+                    onEntryDelete={handleEntryDelete}
+                    onEntryAdd={handleEntryAdd}
+                />
+            </Accordion>
 
-    {/* ── Snapshot History (accordion, session-only) ─────────────────── */}
-    <Accordion title="Recent Snapshots" badge={snapshots.length || undefined} defaultOpen={false}>
-      <SnapshotHistory snapshots={snapshots} onRestore={handleRestoreSnapshot} onClearHistory={() => setSnapshots([])} />
-    </Accordion>
+            {/* ── Footer: Share ─────────────────────────────────────────────── */}
+            <ShareFooter chartRef={chartRef} onClear={handleClear} />
+
+            {/* ── Snapshot History (accordion, session-only) ─────────────────── */}
+            <Accordion
+                title='Recent Snapshots'
+                badge={snapshots.length || undefined}
+                defaultOpen={false}
+            >
+                <SnapshotHistory
+                    snapshots={snapshots}
+                    onRestore={handleRestoreSnapshot}
+                    onClearHistory={() => setSnapshots([])}
+                />
+            </Accordion>
         </div>
     );
 }

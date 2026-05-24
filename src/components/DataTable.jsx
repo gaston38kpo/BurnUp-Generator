@@ -17,6 +17,40 @@
 
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react'
 
+/**
+ * EntryValueInput — local-state wrapper for existing entry value inputs.
+ * Only propagates the value upstream on blur, not on every keystroke.
+ * This prevents URL regeneration and snapshot creation while typing.
+ */
+function EntryValueInput({ value, index, onEntryChange }) {
+  const [local, setLocal] = useState(value)
+
+  // Sync from external value (e.g. after snapshot restore)
+  useEffect(() => {
+    setLocal(value)
+  }, [value])
+
+  const commit = useCallback(() => {
+    if (local !== value) {
+      onEntryChange(index, 'valor', local === '' ? '' : Number(local))
+    }
+  }, [local, value, index, onEntryChange])
+
+  return (
+    <input
+      type="number"
+      className="input-value"
+      value={local}
+      step="any"
+      placeholder="0"
+      onChange={(e) => setLocal(e.target.value === '' ? '' : Number(e.target.value))}
+      onBlur={commit}
+      onKeyDown={(e) => { if (e.key === 'Enter') commit() }}
+      aria-label="Entry value"
+    />
+  )
+}
+
 export default function DataTable({
   sprints,
   entries,
@@ -124,7 +158,7 @@ export default function DataTable({
     } else if (!available.some((s) => s.id === tplSprintId)) {
       setTplSprintId(available[0].id)
     }
-  }, [sprints, tplTipo, usedSprints, availableSprintsForTipo])
+  }, [sprints, tplTipo, usedSprints, availableSprintsForTipo, tplSprintId])
 
   const wouldToggleDuplicate = useCallback(
     (entryIndex, entryTipo, entrySprintId) => {
@@ -141,8 +175,6 @@ export default function DataTable({
 
   return (
     <div className="data-table-container">
-      <h2 className="section-title">Data Entries</h2>
-
 
       {/* ── Entry Template Form ────────────────────────────────────── */}
       <div className={`entry-template ${tplModeClass}`}>
@@ -432,21 +464,11 @@ export default function DataTable({
                             =
                           </button>
                         </div>
-                        <input
-                          type="number"
-                          className="input-value"
-                          value={entry.valor}
-                          step="any"
-                          placeholder="0"
-                          onChange={(e) =>
-                            onEntryChange(
-                              index,
-                              'valor',
-                              e.target.value === '' ? '' : Number(e.target.value)
-                            )
-                          }
-                          aria-label="Entry value"
-                        />
+              <EntryValueInput
+                value={entry.valor}
+                index={index}
+                onEntryChange={onEntryChange}
+              />
                       </div>
                     </td>
                     <td className="col-cum">

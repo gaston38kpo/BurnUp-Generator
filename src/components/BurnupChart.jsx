@@ -22,6 +22,7 @@ import {
   ResponsiveContainer,
 } from 'recharts'
 import { computeChartData } from '../lib/chartData'
+import ChartSettings from './ChartSettings'
 
 /**
  * Custom legend with colored dots matching line colors.
@@ -68,7 +69,7 @@ function CustomTooltip({ active, payload, label }) {
   )
 }
 
-export default function BurnupChart({ sprints, entries }) {
+export default function BurnupChart({ sprints, entries, chartConfig, onChartConfigChange }) {
   const { data: chartData } = useMemo(
     () => computeChartData(sprints, entries),
     [sprints, entries]
@@ -88,12 +89,14 @@ export default function BurnupChart({ sprints, entries }) {
           </svg>
           <p className="chart-empty-text">Add sprints to see the burnup chart</p>
         </div>
+        <ChartSettings chartConfig={chartConfig} onChartConfigChange={onChartConfigChange} />
       </div>
     )
   }
 
   return (
     <div className="burnup-chart-container">
+      <ChartSettings chartConfig={chartConfig} onChartConfigChange={onChartConfigChange} />
       <ResponsiveContainer width="100%" height={400}>
         <LineChart
           data={chartData}
@@ -142,14 +145,14 @@ export default function BurnupChart({ sprints, entries }) {
 
           {/* Area fills for visual weight */}
           <Area
-            type="stepAfter"
+            type={chartConfig.scopeType}
             dataKey="scope"
             stroke="yellow"
             fill="url(#gradScope)"
             isAnimationActive={false}
           />
           <Area
-            type="stepAfter"
+            type={chartConfig.completedType}
             dataKey="completed"
             stroke="red"
             fill="url(#gradCompleted)"
@@ -158,7 +161,7 @@ export default function BurnupChart({ sprints, entries }) {
 
           {/* Scope line */}
           <Line
-            type="stepAfter"
+            type={chartConfig.scopeType}
             dataKey="scope"
             name="Scope"
             stroke="var(--scope)"
@@ -169,7 +172,7 @@ export default function BurnupChart({ sprints, entries }) {
 
           {/* Completed line */}
           <Line
-            type="linear"
+            type={chartConfig.completedType}
             dataKey="completed"
             name="Completed"
             stroke="var(--completed)"

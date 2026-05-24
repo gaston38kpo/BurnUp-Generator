@@ -51,11 +51,11 @@ function base64UrlToUint8(str) {
 // ─── State ↔ Compact JSON (v2) ──────────────────────────────────────────────
 
 function stateToCompact(state) {
-  const compact = [4, state.title || null, state.dateFrom || null, state.dateTo || null]
+  const compact = [5, state.title || null, state.dateFrom || null, state.dateTo || null]
   for (const s of state.sprints) {
     compact.push(s.name)
   }
-  compact.push(null)
+  compact.push(null) // sprint sentinel
 
   const idToIndex = new Map()
   state.sprints.forEach((s, i) => idToIndex.set(s.id, i))
@@ -71,6 +71,12 @@ function stateToCompact(state) {
     )
   }
 
+  // Chart config: 0 = linear, 1 = stepAfter
+  const cc = state.chartConfig || {}
+  compact.push(null) // chartConfig sentinel
+  compact.push(cc.scopeType === 'stepAfter' ? 1 : 0)
+  compact.push(cc.completedType === 'stepAfter' ? 1 : 0)
+
   return compact
 }
 
@@ -81,8 +87,9 @@ function compactToState(compact) {
   if (version === 1 || (typeof version === 'string')) {
     return { error: 'v1_unsupported' }
   }
-  if (version !== 2 && version !== 3 && version !== 4) return null
+  if (version < 2 || version > 5) return null
 
+  // v5: [5, title, dateFrom, dateTo, sprintNames..., null, entries..., null, scopeType, completedType]
   // v4: [4, title, dateFrom, dateTo, sprintNames..., null, entries...]
   // v3: [3, title, sprintNames..., null, entries...]
   // v2: [2, title, sprintNames..., null, entries...]
@@ -91,7 +98,7 @@ function compactToState(compact) {
   let dateTo = ''
   let sprintsStart
 
-  if (version === 4) {
+  if (version >= 4) {
     title = compact.length > 1 && typeof compact[1] === 'string' ? compact[1] : ''
     dateFrom = compact.length > 2 && typeof compact[2] === 'string' ? compact[2] : ''
     dateTo = compact.length > 3 && typeof compact[3] === 'string' ? compact[3] : ''
@@ -107,11 +114,12 @@ function compactToState(compact) {
     sprints.push({ id: 's' + (i - sprintsStart), name: String(compact[i]) })
     i++
   }
-  i++ // skip null sentinel
+  i++ // skip null sentinel (end of sprints)
 
   const stride = version === 2 ? 3 : 4
   const entries = []
-  while (i + stride - 1 < compact.length) {
+  // For v5+, stop at the next null sentinel (chartConfig separator)
+  while (i + stride - 1 < compact.length && compact[i] !== null) {
     const sprintIndex = compact[i]
     const valor = Number(compact[i + 1]) || 0
     const tipo = compact[i + 2] === 1 ? 'Completed' : 'Scope'
@@ -123,8 +131,18 @@ function compactToState(compact) {
     i += stride
   }
 
-  const result = { title, sprints, entries }
-  if (version === 4) {
+  // Parse chartConfig for v5+
+  let chartConfig = { scopeType: 'linear', completedType: 'linear' }
+  if (version >= 5 && i < compact.length && compact[i] === null) {
+    i++ // skip chartConfig sentinel
+    if (i + 1 < compact.length) {
+      chartConfig.scopeType = compact[i] === 1 ? 'stepAfter' : 'linear'
+      chartConfig.completedType = compact[i + 1] === 1 ? 'stepAfter' : 'linear'
+    }
+  }
+
+  const result = { title, sprints, entries, chartConfig }
+  if (version >= 4) {
     result.dateFrom = dateFrom
     result.dateTo = dateTo
   }

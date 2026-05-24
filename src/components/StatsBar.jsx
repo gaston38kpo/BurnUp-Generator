@@ -12,21 +12,55 @@
 
 import { useMemo } from 'react'
 
-export default function StatsBar({ entries }) {
-  const stats = useMemo(() => {
-    let totalScope = 0
-    let totalCompleted = 0
-    for (const e of entries) {
-      const val = Number(e.valor) || 0
-      if (e.tipo === 'Scope') totalScope += val
-      else if (e.tipo === 'Completed') totalCompleted += val
+function computeStats(entries, sprints) {
+  const sprintIndexMap = new Map(sprints.map((s, i) => [s.id, i]))
+
+  const entryBySprintTipo = new Map()
+  for (const e of entries) {
+    entryBySprintTipo.set(e.sprintId + '|' + e.tipo, {
+      valor: Number(e.valor) || 0,
+      mode: e.mode || 'relative',
+    })
+  }
+
+  let scopeAcc = 0
+  let completedAcc = 0
+  for (const s of sprints) {
+    const scopeEntry = entryBySprintTipo.get(s.id + '|Scope')
+    const completedEntry = entryBySprintTipo.get(s.id + '|Completed')
+    if (scopeEntry) {
+      scopeAcc =
+        scopeEntry.mode === 'absolute'
+          ? scopeEntry.valor
+          : scopeAcc + scopeEntry.valor
     }
-    const remaining = Math.max(0, totalScope - totalCompleted)
-    const pct = totalScope > 0 ? Math.min(100, Math.round((totalCompleted / totalScope) * 100)) : 0
-    const onTrack = totalCompleted >= totalScope * (pct / 100) // simplified
+    if (completedEntry) {
+      completedAcc =
+        completedEntry.mode === 'absolute'
+          ? completedEntry.valor
+          : completedAcc + completedEntry.valor
+    }
+  }
+
+  const remaining = Math.max(0, scopeAcc - completedAcc)
+  const pct =
+    scopeAcc > 0
+      ? Math.min(100, Math.round((completedAcc / scopeAcc) * 100))
+      : 0
+
+  return { totalScope: scopeAcc, totalCompleted: completedAcc, remaining, pct }
+}
+
+export default function StatsBar({ entries, sprints }) {
+  const stats = useMemo(() => {
+    const { totalScope, totalCompleted, remaining, pct } = computeStats(
+      entries,
+      sprints || []
+    )
+    const onTrack = totalCompleted >= totalScope * (pct / 100)
 
     return { totalScope, totalCompleted, remaining, pct, onTrack }
-  }, [entries])
+  }, [entries, sprints])
 
   const hasScope = stats.totalScope > 0
 

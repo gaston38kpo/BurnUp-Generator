@@ -1,36 +1,28 @@
 /**
- * urlState.js — URL Compression & State Synchronization
+ * urlState.js — URL Compression & State Synchronization (v4)
  *
- * This module handles serializing the app state to a compressed URL token
- * and deserializing it back. The pipeline is:
+ * Pipeline:
+ * WRITE: state → compact JSON → pako.deflate(raw) → Uint8Array → base64url → ?data=...
+ * READ: ?data=... → base64url → Uint8Array → pako.inflate() → compact JSON → state
  *
- *   WRITE:  state → compact JSON → pako.deflate(raw) → Uint8Array → base64url → ?data=...
- *   READ:   ?data=... → base64url → Uint8Array → pako.inflate() → compact JSON → state
+ * v4 compact format:
+ * [4, title|null, dateFrom|null, dateTo|null, sprintName0, sprintName1, ..., null, sprintIndex, valor, tipo, mode, ...]
+ * Prefix 4 = version. title, dateFrom, dateTo are strings or null.
+ * Entries use sprint array index (0-based).
+ * tipo: 0 = Scope, 1 = Completed
+ * mode: 0 = relative, 1 = absolute
  *
- * Why pako + deflate?
- * - pako is the fastest JS deflate/inflate implementation (port of zlib)
- * - deflate gives ~70-85% compression on JSON strings
- * - base64url encoding is URL-safe (no +/+= issues)
+ * v3 backward compat: [3, title|null, sprintName0, ...]
+ * v2 backward compat: entries are triplets (sprintIndex, valor, tipo), mode defaults to 'relative'
  *
- * Compact JSON format:
- *   Instead of verbose keys like "fechaInicio", "fechaFin", "entries",
- *   we use a short array format to minimize the string before compression:
- *
- *   [startDate, endDate, [date, type, value, ...], ...]
- *     0        1        2..N
- *
- *   Where type is 0=Scope, 1=Completed. This cuts ~40% of the JSON size
- *   before compression even runs.
+ * v1 handling:
+ * If first element is a string (date) or 1, returns { error: 'v1_unsupported' }
  */
 
 import pako from 'pako'
 
 // ─── Base64 URL-safe encoding ────────────────────────────────────────────────
 
-/**
- * Encode a Uint8Array to a URL-safe Base64 string.
- * Replaces '+' with '-', '/' with '_', and strips '=' padding.
- */
 function uint8ToBase64Url(bytes) {
   let binary = ''
   for (let i = 0; i < bytes.length; i++) {
@@ -42,11 +34,7 @@ function uint8ToBase64Url(bytes) {
     .replace(/=+$/, '')
 }
 
-/**
- * Decode a URL-safe Base64 string back to a Uint8Array.
- */
 function base64UrlToUint8(str) {
-  // Restore standard Base64 padding
   let base64 = str.replace(/-/g, '+').replace(/_/g, '/')
   const pad = base64.length % 4
   if (pad === 2) base64 += '=='
@@ -60,63 +48,100 @@ function base64UrlToUint8(str) {
   return bytes
 }
 
-// ─── State ↔ Compact JSON ─────────────────────────────────────────────────────
+// ─── State ↔ Compact JSON (v2) ──────────────────────────────────────────────
 
-/**
- * Convert the full app state to a compact JSON-serializable array.
- *
- * Full state:  { fechaInicio, fechaFin, entries: [{ fecha, tipo, valor }] }
- * Compact:     ["2025-01-01", "2025-01-31", 0, "2025-01-01", 10, 0, "2025-01-05", 5, ...]
- *
- * Format: [startDate, endDate, ...flatEntries]
- *   Each entry = 3 values: [date, value, type]
- *     type: 0 = "Scope", 1 = "Completed"
- */
 function stateToCompact(state) {
-  const flat = [state.fechaInicio, state.fechaFin]
-  for (const entry of state.entries) {
-    flat.push(entry.fecha, entry.valor, entry.tipo === 'Completed' ? 1 : 0)
+  const compact = [4, state.title || null, state.dateFrom || null, state.dateTo || null]
+  for (const s of state.sprints) {
+    compact.push(s.name)
   }
-  return flat
+  compact.push(null)
+
+  const idToIndex = new Map()
+  state.sprints.forEach((s, i) => idToIndex.set(s.id, i))
+
+  for (const e of state.entries) {
+    const sprintIndex = idToIndex.get(e.sprintId)
+    if (sprintIndex === undefined) continue
+    compact.push(
+      sprintIndex,
+      Number(e.valor) || 0,
+      e.tipo === 'Completed' ? 1 : 0,
+      e.mode === 'absolute' ? 1 : 0
+    )
+  }
+
+  return compact
 }
 
-/**
- * Reconstruct the full app state from the compact array format.
- */
 function compactToState(compact) {
-  if (!Array.isArray(compact) || compact.length < 2) return null
+  if (!Array.isArray(compact) || compact.length === 0) return null
 
-  const fechaInicio = compact[0]
-  const fechaFin = compact[1]
-  const entries = []
+  const version = compact[0]
+  if (version === 1 || (typeof version === 'string')) {
+    return { error: 'v1_unsupported' }
+  }
+  if (version !== 2 && version !== 3 && version !== 4) return null
 
-  // Entries start at index 2, in groups of 3: [date, value, type]
-  for (let i = 2; i < compact.length; i += 3) {
-    entries.push({
-      fecha: String(compact[i]),
-      valor: Number(compact[i + 1]) || 0,
-      tipo: compact[i + 2] === 1 ? 'Completed' : 'Scope',
-    })
+  // v4: [4, title, dateFrom, dateTo, sprintNames..., null, entries...]
+  // v3: [3, title, sprintNames..., null, entries...]
+  // v2: [2, title, sprintNames..., null, entries...]
+  let title = ''
+  let dateFrom = ''
+  let dateTo = ''
+  let sprintsStart
+
+  if (version === 4) {
+    title = compact.length > 1 && typeof compact[1] === 'string' ? compact[1] : ''
+    dateFrom = compact.length > 2 && typeof compact[2] === 'string' ? compact[2] : ''
+    dateTo = compact.length > 3 && typeof compact[3] === 'string' ? compact[3] : ''
+    sprintsStart = 4
+  } else {
+    title = compact.length > 1 && typeof compact[1] === 'string' ? compact[1] : ''
+    sprintsStart = 2
   }
 
-  return { fechaInicio, fechaFin, entries }
+  const sprints = []
+  let i = sprintsStart
+  while (i < compact.length && compact[i] !== null) {
+    sprints.push({ id: 's' + (i - sprintsStart), name: String(compact[i]) })
+    i++
+  }
+  i++ // skip null sentinel
+
+  const stride = version === 2 ? 3 : 4
+  const entries = []
+  while (i + stride - 1 < compact.length) {
+    const sprintIndex = compact[i]
+    const valor = Number(compact[i + 1]) || 0
+    const tipo = compact[i + 2] === 1 ? 'Completed' : 'Scope'
+    const mode =
+      stride === 4 && compact[i + 3] === 1 ? 'absolute' : 'relative'
+    if (sprintIndex >= 0 && sprintIndex < sprints.length) {
+      entries.push({ sprintId: sprints[sprintIndex].id, tipo, valor, mode })
+    }
+    i += stride
+  }
+
+  const result = { title, sprints, entries }
+  if (version === 4) {
+    result.dateFrom = dateFrom
+    result.dateTo = dateTo
+  }
+  return result
 }
 
 // ─── Public API ────────────────────────────────────────────────────────────────
 
 /**
  * Compress the app state into a URL-safe token string.
- *
- * Pipeline: state → compact array → JSON → pako.deflate → base64url
- *
- * @param {object} state - The full app state { fechaInicio, fechaFin, entries }
+ * @param {object} state - { title, sprints: [{id, name}], entries: [{sprintId, tipo, valor, mode}] }
  * @returns {string} URL-safe compressed token
  */
 export function encodeState(state) {
   try {
     const compact = stateToCompact(state)
     const json = JSON.stringify(compact)
-    // pako.deflate returns Uint8Array; level 9 = max compression for shortest URL
     const compressed = pako.deflate(json, { level: 9 })
     return uint8ToBase64Url(compressed)
   } catch (e) {
@@ -127,11 +152,8 @@ export function encodeState(state) {
 
 /**
  * Decompress a URL-safe token string back into the app state.
- *
- * Pipeline: base64url → Uint8Array → pako.inflate → JSON → compact array → state
- *
  * @param {string} token - URL-safe compressed token
- * @returns {object|null} The app state, or null if decoding fails
+ * @returns {object|null} The app state, or { error: 'v1_unsupported' }, or null
  */
 export function decodeState(token) {
   if (!token) return null
@@ -157,8 +179,6 @@ export function readUrlToken() {
 
 /**
  * Write the token into the URL using history.replaceState (no navigation).
- * This keeps the browser history clean — back button works as expected.
- *
  * @param {string} token
  */
 export function writeUrlToken(token) {

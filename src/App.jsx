@@ -1,20 +1,26 @@
 /**
- * App.jsx — Main orchestrator for the Burnup Chart Generator
+ * App.jsx — Main orchestrator for the Sprint-Based Burnup Chart Generator
  *
  * Architecture:
- *   ┌─────────────────────────────────────────────┐
- *   │  App (state owner)                           │
- *   │  ├─ fechaInicio, fechaFin (date filters)     │
- *   │  ├─ entries[] (data table rows)              │
- *   │  │                                           │
- *   │  ├─ <Header /> (icon + title + date filters) │
- *   │  ├─ <BurnupChart /> (reads state)            │
- *   │  ├─ <StatsBar /> (reads entries)             │
- *   │  ├─ <DataTable /> (reads + mutates)          │
- *   │  └─ <ShareFooter /> (reads URL + chart)      │
- *   │                                              │
- *   │  URL Sync: state → encode → replaceState     │
- *   └─────────────────────────────────────────────┘
+ * ┌─────────────────────────────────────────────┐
+ * │ App (state owner)                           │
+ * │ ├─ sprints[] (ordered sprint definitions)   │
+ * │ ├─ entries[] (data table rows)              │
+ * │                                             │
+ * │ ├─ <Header /> (icon + title + sprint count) │
+ * │ ├─ <BurnupChart /> (reads state)            │
+ * │ ├─ <StatsBar /> (reads entries)             │
+ * │ ├─ <DataTable /> (reads + mutates)          │
+ * │ └─ <ShareFooter /> (reads URL + chart)      │
+ * │                                             │
+ * │ URL Sync: state → encode → replaceState     │
+ * └─────────────────────────────────────────────┘
+ *
+ * Sprint model:
+ * - Sprint 0 always exists (cannot be removed)
+ * - Additional sprints (1..N) controlled by a numeric input
+ * - Sprint count input sets N (minimum 1, meaning Sprint 1 exists)
+ * - Badge shows N (additional sprints), not counting Sprint 0
  */
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
@@ -25,25 +31,54 @@ import ShareFooter from './components/ShareFooter'
 import { encodeState, decodeState, readUrlToken, writeUrlToken } from './lib/urlState'
 import './App.css'
 
+const SPRINT_0_ID = 's0'
+const SPRINT_0_NAME = 'Sprint 0'
+
+function buildSprints(count) {
+  // count = additional sprints (1..N). Total = count + 1 (including Sprint 0)
+  const sprints = [{ id: SPRINT_0_ID, name: SPRINT_0_NAME }]
+  for (let i = 1; i <= count; i++) {
+    sprints.push({ id: 's' + i, name: 'Sprint ' + i })
+  }
+  return sprints
+}
+
+const DEFAULT_SPRINT_COUNT = 1
+
 const DEFAULT_STATE = {
-  fechaInicio: '',
-  fechaFin: '',
+  title: '',
+  sprintCount: DEFAULT_SPRINT_COUNT,
+  sprints: buildSprints(DEFAULT_SPRINT_COUNT),
   entries: [],
+  dateFrom: '',
+  dateTo: '',
 }
 
 function loadInitialState() {
   const token = readUrlToken()
   if (token) {
     const decoded = decodeState(token)
-    if (decoded) return decoded
+    if (decoded?.error === 'v1_unsupported') {
+      return { state: DEFAULT_STATE, v1Error: true }
+    }
+    if (decoded && decoded.sprints && decoded.entries) {
+      // Derive sprintCount from loaded sprints (total - 1 for Sprint 0)
+      const sprintCount = Math.max(1, decoded.sprints.length - 1)
+      return { state: { title: decoded.title || '', sprintCount, sprints: decoded.sprints, entries: decoded.entries, dateFrom: decoded.dateFrom || '', dateTo: decoded.dateTo || '' }, v1Error: false }
+    }
   }
-  return DEFAULT_STATE
+  return { state: DEFAULT_STATE, v1Error: false }
 }
 
 export default function App() {
-  const [fechaInicio, setFechaInicio] = useState(() => loadInitialState().fechaInicio)
-  const [fechaFin, setFechaFin] = useState(() => loadInitialState().fechaFin)
-  const [entries, setEntries] = useState(() => loadInitialState().entries)
+  const initial = loadInitialState()
+  const [title, setTitle] = useState(initial.state.title)
+  const [sprintCount, setSprintCount] = useState(initial.state.sprintCount)
+  const [sprints, setSprints] = useState(initial.state.sprints)
+  const [entries, setEntries] = useState(initial.state.entries)
+  const [dateFrom, setDateFrom] = useState(initial.state.dateFrom)
+  const [dateTo, setDateTo] = useState(initial.state.dateTo)
+  const [v1Error, setV1Error] = useState(initial.v1Error)
 
   const chartRef = useRef(null)
 
@@ -54,7 +89,7 @@ export default function App() {
     if (urlSyncTimer.current) clearTimeout(urlSyncTimer.current)
 
     urlSyncTimer.current = setTimeout(() => {
-      const state = { fechaInicio, fechaFin, entries }
+      const state = { title, sprints, entries, dateFrom, dateTo }
       const token = encodeState(state)
       writeUrlToken(token)
     }, 300)
@@ -62,20 +97,96 @@ export default function App() {
     return () => {
       if (urlSyncTimer.current) clearTimeout(urlSyncTimer.current)
     }
-  }, [fechaInicio, fechaFin, entries])
+  }, [title, sprints, entries, dateFrom, dateTo])
 
-  // ─── Sorted entries for display (newest date first) ────────────────────
-  const sortedEntries = useMemo(() => {
-    return entries
-      .map((entry, originalIndex) => ({ ...entry, originalIndex }))
-      .sort((a, b) => b.fecha.localeCompare(a.fecha))
-  }, [entries])
+  // ─── Sprint count management ───────────────────────────────────────────
+  const handleSprintCountChange = useCallback((newCount) => {
+    const count = Math.max(1, Number(newCount) || 1)
+    setSprintCount(count)
+    setSprints((prev) => {
+      const currentCount = prev.length - 1 // subtract Sprint 0
+      if (count === currentCount) return prev
+
+      if (count > currentCount) {
+        // Add sprints
+        const added = []
+        for (let i = currentCount + 1; i <= count; i++) {
+          added.push({ id: 's' + i, name: 'Sprint ' + i })
+        }
+        return [...prev, ...added]
+      } else {
+        // Remove sprints from the end (but never Sprint 0)
+        const kept = prev.slice(0, count + 1) // +1 for Sprint 0
+        // Also remove entries belonging to removed sprints
+        const keptIds = new Set(kept.map((s) => s.id))
+        setEntries((prevEntries) => prevEntries.filter((e) => keptIds.has(e.sprintId)))
+        return kept
+      }
+    })
+  }, [])
+
+  // ─── Sprint badge inline-edit ──────────────────────────────────────────
+  const [editingSprint, setEditingSprint] = useState(false)
+  const [sprintDraft, setSprintDraft] = useState(String(sprintCount))
+  const sprintEditRef = useRef(null)
+
+  useEffect(() => {
+    if (editingSprint && sprintEditRef.current) {
+      sprintEditRef.current.focus()
+      sprintEditRef.current.select()
+    }
+  }, [editingSprint])
+
+  useEffect(() => {
+    setSprintDraft(String(sprintCount))
+  }, [sprintCount])
+
+  const commitSprintEdit = useCallback(() => {
+    const val = Math.max(1, parseInt(sprintDraft, 10) || 1)
+    setSprintDraft(String(val))
+    handleSprintCountChange(val)
+    setEditingSprint(false)
+  }, [sprintDraft, handleSprintCountChange])
+
+  const cancelSprintEdit = useCallback(() => {
+    setSprintDraft(String(sprintCount))
+    setEditingSprint(false)
+  }, [sprintCount])
+
+  const handleSprintKeyDown = useCallback((e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      commitSprintEdit()
+    } else if (e.key === 'Escape') {
+      e.preventDefault()
+      cancelSprintEdit()
+    }
+  }, [commitSprintEdit, cancelSprintEdit])
+
+  // ─── Date inline-edit ──────────────────────────────────────────────────
+  const [editingDateFrom, setEditingDateFrom] = useState(false)
+  const [editingDateTo, setEditingDateTo] = useState(false)
+  const dateFromEditRef = useRef(null)
+  const dateToEditRef = useRef(null)
+
+  useEffect(() => {
+    if (editingDateFrom && dateFromEditRef.current) {
+      dateFromEditRef.current.focus()
+    }
+  }, [editingDateFrom])
+
+  useEffect(() => {
+    if (editingDateTo && dateToEditRef.current) {
+      dateToEditRef.current.focus()
+    }
+  }, [editingDateTo])
 
   // ─── Entry mutation handlers ────────────────────────────────────────────
-  const handleEntryAdd = useCallback((fecha, tipo, valor) => {
+  const handleEntryAdd = useCallback((sprintId, tipo, valor, mode) => {
+    if (!sprintId) return
     setEntries((prev) => [
       ...prev,
-      { fecha, tipo, valor },
+      { sprintId, tipo, valor: Number(valor) || 0, mode: mode || 'relative' },
     ])
   }, [])
 
@@ -92,17 +203,14 @@ export default function App() {
   }, [])
 
   const handleClear = useCallback(() => {
+    setTitle('')
+    setSprintCount(DEFAULT_SPRINT_COUNT)
+    setSprints(buildSprints(DEFAULT_SPRINT_COUNT))
     setEntries([])
+    setDateFrom('')
+    setDateTo('')
+    setV1Error(false)
   }, [])
-
-  // ─── Compute sprint duration ───────────────────────────────────────────
-  const sprintDays = useMemo(() => {
-    if (!fechaInicio || !fechaFin) return null
-    const start = new Date(fechaInicio)
-    const end = new Date(fechaFin)
-    const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1
-    return days > 0 ? days : null
-  }, [fechaInicio, fechaFin])
 
   // ─── Render ─────────────────────────────────────────────────────────────
 
@@ -111,80 +219,133 @@ export default function App() {
       {/* ── Header ─────────────────────────────────────────────────────── */}
       <header className="app-header">
         <div className="header-top">
-          <div className="header-brand">
-            <svg className="header-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect width="32" height="32" rx="8" fill="var(--accent)"/>
-              <path d="M6 24V8" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
-              <path d="M6 24H26" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
-              <path d="M6 18C10 18 12 10 16 10C20 10 22 16 26 16" stroke="#34d399" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
-              <path d="M6 24C10 24 12 18 16 18C20 18 22 22 26 22" stroke="white" strokeWidth="2.5" strokeLinecap="round" fill="none" opacity="0.5"/>
-            </svg>
-            <div>
-              <h1 className="app-title">Burnup</h1>
-              <p className="app-subtitle">Chart Generator</p>
-            </div>
+          <svg className="header-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="32" height="32" rx="8" fill="var(--accent)"/>
+            <path d="M6 24V8" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+            <path d="M6 24H26" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+            <path d="M6 18C10 18 12 10 16 10C20 10 22 16 26 16" stroke="#34d399" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+            <path d="M6 24C10 24 12 18 16 18C20 18 22 22 26 22" stroke="white" strokeWidth="2.5" strokeLinecap="round" fill="none" opacity="0.5"/>
+          </svg>
+          <div className="header-text">
+            <h1 className="app-title">
+              <input
+                type="text"
+                className="title-input"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Burnup"
+                aria-label="Chart title"
+              />
+            </h1>
+          <div className="header-meta">
+            <p className="app-subtitle">BurnUp Chart Generator</p>
+            {editingSprint ? (
+              <input
+                ref={sprintEditRef}
+                type="number"
+                className="sprint-badge-input"
+                value={sprintDraft}
+                min={1}
+                step={1}
+                onChange={(e) => setSprintDraft(e.target.value)}
+                onBlur={commitSprintEdit}
+                onKeyDown={handleSprintKeyDown}
+                aria-label="Number of additional sprints"
+              />
+            ) : (
+              <button
+                className="sprint-badge"
+                onClick={() => setEditingSprint(true)}
+                title="Click to edit sprint count"
+                aria-label={`${sprintCount} sprint${sprintCount !== 1 ? 's' : ''} — click to edit`}
+              >
+                {sprintCount} sprint{sprintCount !== 1 ? 's' : ''}
+                <svg className="sprint-badge-icon" width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M10.5 2.5L13.5 5.5L5 14H2V11L10.5 2.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+                </svg>
+              </button>
+            )}
+            {(dateFrom || dateTo) ? (
+              <span className="date-range">
+                <button
+                  className="date-display"
+                  onClick={() => setEditingDateFrom(true)}
+                  title="Click to edit start date"
+                >
+                  {dateFrom || '—'}
+                </button>
+                <span className="date-arrow">→</span>
+                <button
+                  className="date-display"
+                  onClick={() => setEditingDateTo(true)}
+                  title="Click to edit end date"
+                >
+                  {dateTo || '—'}
+                </button>
+              </span>
+            ) : (
+              <button
+                className="date-placeholder"
+                onClick={() => setEditingDateFrom(true)}
+                title="Click to set dates"
+              >
+                + dates
+              </button>
+            )}
+            {editingDateFrom && (
+              <input
+                ref={dateFromEditRef}
+                type="date"
+                className="date-input-inline"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+                onBlur={() => setEditingDateFrom(false)}
+                onKeyDown={(e) => { if (e.key === 'Escape') setEditingDateFrom(false) }}
+                aria-label="Start date"
+              />
+            )}
+            {editingDateTo && (
+              <input
+                ref={dateToEditRef}
+                type="date"
+                className="date-input-inline"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+                onBlur={() => setEditingDateTo(false)}
+                onKeyDown={(e) => { if (e.key === 'Escape') setEditingDateTo(false) }}
+                aria-label="End date"
+              />
+            )}
           </div>
-          {sprintDays && (
-            <span className="sprint-badge">
-              {sprintDays} day{sprintDays !== 1 ? 's' : ''}
-            </span>
-          )}
+          </div>
         </div>
 
-        <div className="filter-row">
-          <div className="filter-group">
-            <label htmlFor="fecha-inicio" className="filter-label">
-              Start Date
-            </label>
-            <input
-              id="fecha-inicio"
-              type="date"
-              className="input-date filter-input"
-              value={fechaInicio}
-              onChange={(e) => setFechaInicio(e.target.value)}
-              aria-label="Project start date"
-            />
+        {v1Error && (
+          <div className="v1-error-banner">
+            <span>This link uses an older format. Please start fresh.</span>
+            <button onClick={() => setV1Error(false)} aria-label="Dismiss">
+              &times;
+            </button>
           </div>
-          <div className="filter-arrow">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M3 8H13M10 5L13 8L10 11" stroke="var(--text-dim)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
-          <div className="filter-group">
-            <label htmlFor="fecha-fin" className="filter-label">
-              End Date
-            </label>
-            <input
-              id="fecha-fin"
-              type="date"
-              className="input-date filter-input"
-              value={fechaFin}
-              min={fechaInicio || undefined}
-              onChange={(e) => setFechaFin(e.target.value)}
-              aria-label="Project end date"
-            />
-          </div>
-        </div>
+        )}
       </header>
 
       {/* ── Chart Zone ────────────────────────────────────────────────── */}
       <section className="card chart-card" ref={chartRef}>
         <BurnupChart
-          fechaInicio={fechaInicio}
-          fechaFin={fechaFin}
+          sprints={sprints}
           entries={entries}
         />
       </section>
 
       {/* ── Stats Bar ────────────────────────────────────────────────── */}
-      <StatsBar entries={entries} />
+      <StatsBar entries={entries} sprints={sprints} />
 
       {/* ── Data Table ────────────────────────────────────────────────── */}
       <section className="card table-card">
         <DataTable
-          entries={sortedEntries}
-          fechaInicio={fechaInicio}
-          fechaFin={fechaFin}
+          sprints={sprints}
+          entries={entries}
           onEntryChange={handleEntryChange}
           onEntryDelete={handleEntryDelete}
           onEntryAdd={handleEntryAdd}

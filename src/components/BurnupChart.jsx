@@ -11,7 +11,7 @@
 
 import { useMemo } from 'react'
 import {
-  LineChart,
+  ComposedChart,
   Line,
   Area,
   XAxis,
@@ -98,7 +98,7 @@ export default function BurnupChart({ sprints, entries, chartConfig, onChartConf
     <div className="burnup-chart-container">
       <ChartSettings chartConfig={chartConfig} onChartConfigChange={onChartConfigChange} />
       <ResponsiveContainer width="100%" height={400}>
-        <LineChart
+        <ComposedChart
           data={chartData}
           margin={{ top: 16, right: 24, left: 8, bottom: 16 }}
         >
@@ -143,42 +143,30 @@ export default function BurnupChart({ sprints, entries, chartConfig, onChartConf
 
           <Legend content={<CustomLegend />} />
 
-          {/* Area fills for visual weight */}
+          {/* Scope area + line */}
           <Area
-            type={chartConfig.scopeType}
-            dataKey="scope"
-            stroke="yellow"
-            fill="url(#gradScope)"
-            isAnimationActive={false}
-          />
-          <Area
-            type={chartConfig.completedType}
-            dataKey="completed"
-            stroke="red"
-            fill="url(#gradCompleted)"
-            isAnimationActive={false}
-          />
-
-          {/* Scope line */}
-          <Line
             type={chartConfig.scopeType}
             dataKey="scope"
             name="Scope"
             stroke="var(--scope)"
             strokeWidth={2.5}
+            fill="url(#gradScope)"
             dot={false}
             activeDot={{ r: 4, stroke: 'var(--scope)', strokeWidth: 2, fill: 'var(--bg)' }}
+            isAnimationActive={false}
           />
 
-          {/* Completed line */}
-          <Line
+          {/* Completed area + line */}
+          <Area
             type={chartConfig.completedType}
             dataKey="completed"
             name="Completed"
             stroke="var(--completed)"
             strokeWidth={2.5}
+            fill="url(#gradCompleted)"
             dot={false}
             activeDot={{ r: 4, stroke: 'var(--completed)', strokeWidth: 2, fill: 'var(--bg)' }}
+            isAnimationActive={false}
           />
 
           {/* Ideal line */}
@@ -192,7 +180,7 @@ export default function BurnupChart({ sprints, entries, chartConfig, onChartConf
             dot={false}
             activeDot={false}
           />
-        </LineChart>
+        </ComposedChart>
       </ResponsiveContainer>
     </div>
   )

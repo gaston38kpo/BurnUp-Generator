@@ -13,6 +13,7 @@ import { toPng } from 'html-to-image'
 
 export default function ShareFooter({ chartRef, onClear }) {
   const [toast, setToast] = useState('')
+  const [confirmClear, setConfirmClear] = useState(false)
 
   const currentUrl = typeof window !== 'undefined' ? window.location.href : ''
 
@@ -88,15 +89,24 @@ export default function ShareFooter({ chartRef, onClear }) {
           </svg>
           <span>Copy Image</span>
         </button>
-        <button className="btn-icon btn-icon-danger" onClick={onClear} title="Clear all data">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M3 4H13L12 13H4L3 4Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" fill="none"/>
-            <path d="M5 4V2.5H11V4" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
-            <path d="M6.5 6.5V10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-            <path d="M9.5 6.5V10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-          </svg>
-          <span>Clear</span>
-        </button>
+        <div className="clear-wrapper">
+          <button className="btn-icon btn-icon-danger" onClick={() => setConfirmClear(true)} title="Clear all data">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 4H13L12 13H4L3 4Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" fill="none"/>
+              <path d="M5 4V2.5H11V4" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+              <path d="M6.5 6.5V10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              <path d="M9.5 6.5V10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+            <span>Clear</span>
+          </button>
+          {confirmClear && (
+            <div className="confirm-dialog" onClick={(e) => e.stopPropagation()}>
+              <span>Clear all data?</span>
+              <button className="confirm-yes" onClick={() => { onClear(); setConfirmClear(false) }}>Yes</button>
+              <button className="confirm-no" onClick={() => setConfirmClear(false)}>No</button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Toast notification */}

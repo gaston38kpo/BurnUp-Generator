@@ -995,6 +995,68 @@
   }
 }
 
+/* ─── Clear Confirmation ──────────────────────────────────────────────────── */
+
+.clear-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.confirm-dialog {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  white-space: nowrap;
+  z-index: 100;
+
+  span {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+  }
+}
+
+.confirm-yes,
+.confirm-no {
+  padding: 5px 14px;
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  border: 1px solid var(--border);
+  transition: all var(--transition-fast);
+}
+
+.confirm-yes {
+  color: white;
+  background: var(--danger);
+  border-color: var(--danger);
+
+  &:hover {
+    opacity: 0.85;
+  }
+}
+
+.confirm-no {
+  color: var(--text);
+  background: var(--bg-alt);
+
+  &:hover {
+    background: var(--accent-bg);
+    border-color: var(--accent-border);
+    color: var(--accent);
+  }
+}
+
 /* ─── Toast ─────────────────────────────────────────────────────────────────── */
 
 .toast {

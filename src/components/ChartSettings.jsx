@@ -50,32 +50,34 @@ export default function ChartSettings({ chartConfig, onChartConfigChange }) {
       </button>
       {open && (
         <div className="chart-settings-popover" ref={popoverRef}>
-          <LineConfig
-            label="Scope"
-            dotClass="chart-settings-dot-scope"
-            typeKey="scopeType"
-            fillKey="scopeFill"
-            colorKey="scopeColor"
-            chartConfig={chartConfig}
-            onChartConfigChange={onChartConfigChange}
-          />
-          <LineConfig
-            label="Completed"
-            dotClass="chart-settings-dot-completed"
-            typeKey="completedType"
-            fillKey="completedFill"
-            colorKey="completedColor"
-            chartConfig={chartConfig}
-            onChartConfigChange={onChartConfigChange}
-          />
+        <LineConfig
+          label="Scope"
+          dotClass="chart-settings-dot-scope"
+          typeKey="scopeType"
+          fillKey="scopeFill"
+          colorKey="scopeColor"
+          defaultColor="#6366f1"
+          chartConfig={chartConfig}
+          onChartConfigChange={onChartConfigChange}
+        />
+        <LineConfig
+          label="Completed"
+          dotClass="chart-settings-dot-completed"
+          typeKey="completedType"
+          fillKey="completedFill"
+          colorKey="completedColor"
+          defaultColor="#10b981"
+          chartConfig={chartConfig}
+          onChartConfigChange={onChartConfigChange}
+        />
         </div>
       )}
     </div>
   )
 }
 
-function LineConfig({ label, dotClass, typeKey, fillKey, colorKey, chartConfig, onChartConfigChange }) {
-  const colorValue = chartConfig[colorKey] || '#6366f1'
+function LineConfig({ label, dotClass, typeKey, fillKey, colorKey, defaultColor, chartConfig, onChartConfigChange }) {
+  const colorValue = chartConfig[colorKey] || defaultColor
   const colorInputRef = useRef(null)
 
   return (
@@ -123,6 +125,19 @@ function LineConfig({ label, dotClass, typeKey, fillKey, colorKey, chartConfig, 
             aria-label={`${label} color picker`}
           />
         </button>
+        {colorValue !== defaultColor && (
+          <button
+            className="chart-settings-color-reset"
+            onClick={() => onChartConfigChange(colorKey, defaultColor)}
+            title="Reset to default color"
+            aria-label={`Reset ${label} color`}
+          >
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M2 4.5H9.5C10.8807 4.5 12 5.61929 12 7C12 8.38071 10.8807 9.5 9.5 9.5H3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M4.5 2L2 4.5L4.5 7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+        )}
       </div>
     </div>
   )

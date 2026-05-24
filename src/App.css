@@ -481,6 +481,26 @@
   border: none;
 }
 
+.chart-settings-color-reset {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  color: var(--text-dim);
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color var(--transition-fast);
+
+  &:hover {
+    color: var(--danger);
+  }
+}
+
 .chart-empty {
   display: flex;
   flex-direction: column;

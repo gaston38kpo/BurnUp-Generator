@@ -448,6 +448,39 @@
   border-color: var(--accent);
 }
 
+.chart-settings-color-swatch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  cursor: pointer;
+  overflow: hidden;
+  position: relative;
+  padding: 0;
+  background: none;
+  flex-shrink: 0;
+  transition: border-color var(--transition-fast);
+}
+
+.chart-settings-color-swatch:hover {
+  border-color: var(--accent);
+}
+
+.chart-settings-color-swatch input[type="color"] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  padding: 0;
+  border: none;
+}
+
 .chart-empty {
   display: flex;
   flex-direction: column;

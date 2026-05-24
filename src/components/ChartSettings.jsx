@@ -55,6 +55,7 @@ export default function ChartSettings({ chartConfig, onChartConfigChange }) {
             dotClass="chart-settings-dot-scope"
             typeKey="scopeType"
             fillKey="scopeFill"
+            colorKey="scopeColor"
             chartConfig={chartConfig}
             onChartConfigChange={onChartConfigChange}
           />
@@ -63,6 +64,7 @@ export default function ChartSettings({ chartConfig, onChartConfigChange }) {
             dotClass="chart-settings-dot-completed"
             typeKey="completedType"
             fillKey="completedFill"
+            colorKey="completedColor"
             chartConfig={chartConfig}
             onChartConfigChange={onChartConfigChange}
           />
@@ -72,7 +74,10 @@ export default function ChartSettings({ chartConfig, onChartConfigChange }) {
   )
 }
 
-function LineConfig({ label, dotClass, typeKey, fillKey, chartConfig, onChartConfigChange }) {
+function LineConfig({ label, dotClass, typeKey, fillKey, colorKey, chartConfig, onChartConfigChange }) {
+  const colorValue = chartConfig[colorKey] || '#6366f1'
+  const colorInputRef = useRef(null)
+
   return (
     <div className="chart-settings-section">
       <span className="chart-settings-label">
@@ -102,6 +107,21 @@ function LineConfig({ label, dotClass, typeKey, fillKey, chartConfig, onChartCon
             <path d="M2 12L5 6L8 9L11 4L14 8V12H2Z" fill="currentColor" opacity={chartConfig[fillKey] !== false ? 0.4 : 0.1}/>
             <path d="M2 12L5 6L8 9L11 4L14 8" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" fill="none"/>
           </svg>
+        </button>
+        <button
+          className="chart-settings-color-swatch"
+          onClick={() => colorInputRef.current?.click()}
+          title="Change color"
+          aria-label={`Change ${label} color`}
+          style={{ backgroundColor: colorValue }}
+        >
+          <input
+            ref={colorInputRef}
+            type="color"
+            value={colorValue}
+            onChange={(e) => onChartConfigChange(colorKey, e.target.value)}
+            aria-label={`${label} color picker`}
+          />
         </button>
       </div>
     </div>

@@ -104,12 +104,12 @@ export default function BurnupChart({ sprints, entries, chartConfig, onChartConf
         >
           <defs>
             <linearGradient id="gradScope" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="var(--scope)" stopOpacity={0.15} />
-              <stop offset="100%" stopColor="var(--scope)" stopOpacity={0} />
+              <stop offset="0%" stopColor={chartConfig.scopeColor || '#6366f1'} stopOpacity={0.15} />
+              <stop offset="100%" stopColor={chartConfig.scopeColor || '#6366f1'} stopOpacity={0} />
             </linearGradient>
             <linearGradient id="gradCompleted" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="var(--completed)" stopOpacity={0.12} />
-              <stop offset="100%" stopColor="var(--completed)" stopOpacity={0} />
+              <stop offset="0%" stopColor={chartConfig.completedColor || '#10b981'} stopOpacity={0.12} />
+              <stop offset="100%" stopColor={chartConfig.completedColor || '#10b981'} stopOpacity={0} />
             </linearGradient>
           </defs>
 

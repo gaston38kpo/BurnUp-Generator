@@ -36,6 +36,7 @@ import {
     readUrlToken,
     writeUrlToken,
 } from "./lib/urlState";
+import { cssVarOverrides } from "./lib/colors";
 import "./App.css";
 
 const SPRINT_0_ID = "s0";
@@ -59,7 +60,7 @@ const DEFAULT_STATE = {
     entries: [],
     dateFrom: "",
     dateTo: "",
-    chartConfig: { scopeType: "linear", completedType: "linear", scopeFill: true, completedFill: true },
+    chartConfig: { scopeType: "linear", completedType: "linear", scopeFill: true, completedFill: true, scopeColor: "#6366f1", completedColor: "#10b981" },
 };
 
 function loadInitialState() {
@@ -275,7 +276,7 @@ export default function App() {
         setEntries([]);
         setDateFrom("");
         setDateTo("");
-        setChartConfig({ scopeType: "linear", completedType: "linear", scopeFill: true, completedFill: true });
+        setChartConfig({ scopeType: "linear", completedType: "linear", scopeFill: true, completedFill: true, scopeColor: "#6366f1", completedColor: "#10b981" });
         setV1Error(false);
     }, []);
 
@@ -302,6 +303,8 @@ export default function App() {
         completedType: "linear",
         scopeFill: true,
         completedFill: true,
+        scopeColor: "#6366f1",
+        completedColor: "#10b981",
       },
     );
             setV1Error(false);
@@ -317,6 +320,7 @@ export default function App() {
 
     return (
         <div className='app-layout'>
+            <style dangerouslySetInnerHTML={{ __html: cssVarOverrides(chartConfig.scopeColor, chartConfig.completedColor) }} />
             {/* ── Header ─────────────────────────────────────────────────────── */}
             <header className='app-header'>
                 <div className='header-top'>

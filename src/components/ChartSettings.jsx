@@ -7,6 +7,7 @@
  * so the chart only updates when the user explicitly confirms.
  */
 import { useState, useRef, useEffect, useCallback } from 'react'
+import { GearIcon, ResetIcon } from '../assets/icons'
 
 const LINE_TYPES = [
   { value: 'linear', label: 'Linear', desc: 'Smooth line' },
@@ -85,10 +86,7 @@ export default function ChartSettings({ chartConfig, onChartConfigChange }) {
         title="Chart settings"
         aria-label="Chart settings"
       >
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M6.5 2L9.5 2L10 4L12 5L14 4L15.5 6L14 7.5L14 9.5L15.5 11L14 13L12 12L10 13L9.5 15L6.5 15L6 13L4 12L2 13L0.5 11L2 9.5L2 7.5L0.5 6L2 4L4 5L6 4L6.5 2Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" fill="none"/>
-          <circle cx="8" cy="8.5" r="2.5" stroke="currentColor" strokeWidth="1.3" fill="none"/>
-        </svg>
+      <GearIcon />
       </button>
       {open && (
         <div className="chart-settings-popover" ref={popoverRef}>
@@ -192,13 +190,10 @@ function LineConfig({ label, dotClass, typeKey, fillKey, colorKey, defaultColor,
             className="chart-settings-color-reset"
             onClick={() => onChange(colorKey, defaultColor)}
             title="Reset to default color"
-            aria-label={`Reset ${label} color`}
-          >
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M2 4.5H9.5C10.8807 4.5 12 5.61929 12 7C12 8.38071 10.8807 9.5 9.5 9.5H3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M4.5 2L2 4.5L4.5 7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
+aria-label={`Reset ${label} color`}
+>
+<ResetIcon />
+</button>
         )}
       </div>
     </div>
@@ -240,13 +235,10 @@ function IdealConfig({ colorKey, defaultColor, config, onChange }) {
             className="chart-settings-color-reset"
             onClick={() => onChange(colorKey, '')}
             title="Reset to default color"
-            aria-label="Reset Ideal color"
-          >
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M2 4.5H9.5C10.8807 4.5 12 5.61929 12 7C12 8.38071 10.8807 9.5 9.5 9.5H3.3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M4.5 2L2 4.5L4.5 7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
+aria-label="Reset Ideal color"
+>
+<ResetIcon />
+</button>
         )}
       </div>
     </div>

@@ -30,6 +30,7 @@ import DataTable from "./components/DataTable";
 import ShareFooter from "./components/ShareFooter";
 import Accordion from "./components/Accordion";
 import SnapshotHistory from "./components/SnapshotHistory";
+import { BurnupLogo, PencilIcon } from "./assets/icons";
 import {
     encodeState,
     decodeState,
@@ -343,55 +344,7 @@ export default function App() {
             {/* ── Header ─────────────────────────────────────────────────────── */}
             <header className='app-header'>
                 <div className='header-top'>
-        <svg
-          className='header-icon'
-          viewBox='0 0 32 32'
-          fill='none'
-          xmlns='http://www.w3.org/2000/svg'
-        >
-          <rect
-            width='32'
-            height='32'
-            rx='8'
-            fill='var(--accent)'
-          />
-          <path
-            d='M6 24V6'
-            stroke='white'
-            strokeWidth='1.5'
-            strokeLinecap='round'
-            opacity='0.4'
-          />
-          <path
-            d='M6 24H26'
-            stroke='white'
-            strokeWidth='1.5'
-            strokeLinecap='round'
-            opacity='0.4'
-          />
-          <path
-            d='M6 8H26'
-            stroke='white'
-            strokeWidth='1.5'
-            strokeLinecap='round'
-            opacity='0.4'
-            strokeDasharray='3 2'
-          />
-          <path
-            d='M6 22C9 22 11 16 14 14C17 12 19 10 26 8'
-            stroke='var(--scope)'
-            strokeWidth='2.5'
-            strokeLinecap='round'
-            fill='none'
-          />
-          <path
-            d='M6 22C9 22 12 18 16 14C20 10 22 10 26 10'
-            stroke='var(--completed)'
-            strokeWidth='2.5'
-            strokeLinecap='round'
-            fill='none'
-          />
-        </svg>
+        <BurnupLogo className='header-icon' />
 
                     <div className='header-text'>
                         <h1 className='app-title'>
@@ -486,21 +439,7 @@ export default function App() {
                                 >
                                     {sprintCount} sprint
                                     {sprintCount !== 1 ? "s" : ""}
-                                    <svg
-                                        className='sprint-badge-icon'
-                                        width='12'
-                                        height='12'
-                                        viewBox='0 0 16 16'
-                                        fill='none'
-                                        xmlns='http://www.w3.org/2000/svg'
-                                    >
-                                        <path
-                                            d='M10.5 2.5L13.5 5.5L5 14H2V11L10.5 2.5Z'
-                                            stroke='currentColor'
-                                            strokeWidth='1.5'
-                                            strokeLinejoin='round'
-                                        />
-                                    </svg>
+          <PencilIcon className='sprint-badge-icon' />
                                 </button>
                             )}
                         </div>

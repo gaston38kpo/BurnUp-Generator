@@ -16,6 +16,7 @@
  */
 
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react'
+import { PlusIcon, CloseIcon, EmptyTableIcon } from '../assets/icons'
 
 /**
  * EntryValueInput — local-state wrapper for existing entry value inputs.
@@ -266,20 +267,7 @@ export default function DataTable({
             title="Add entry"
             aria-label="Add entry"
           >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 14 14"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M7 2V12M2 7H12"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            </svg>
+            <PlusIcon />
             Add
           </button>
         </div>
@@ -287,74 +275,7 @@ export default function DataTable({
 
       {entries.length === 0 && (
         <div className="empty-table">
-          <svg
-            className="empty-table-icon"
-            viewBox="0 0 64 64"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <rect
-              x="4"
-              y="12"
-              width="56"
-              height="40"
-              rx="6"
-              stroke="var(--border)"
-              strokeWidth="2"
-              fill="none"
-            />
-            <line
-              x1="4"
-              y1="24"
-              x2="60"
-              y2="24"
-              stroke="var(--border)"
-              strokeWidth="1.5"
-            />
-            <line
-              x1="4"
-              y1="36"
-              x2="60"
-              y2="36"
-              stroke="var(--border)"
-              strokeWidth="1.5"
-            />
-            <line
-              x1="24"
-              y1="24"
-              x2="24"
-              y2="52"
-              stroke="var(--border)"
-              strokeWidth="1.5"
-            />
-            <line
-              x1="44"
-              y1="24"
-              x2="44"
-              y2="52"
-              stroke="var(--border)"
-              strokeWidth="1.5"
-            />
-            <circle cx="50" cy="50" r="12" fill="var(--accent)" opacity="0.9" />
-            <line
-              x1="46"
-              y1="50"
-              x2="54"
-              y2="50"
-              stroke="white"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-            <line
-              x1="50"
-              y1="46"
-              x2="50"
-              y2="54"
-              stroke="white"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-          </svg>
+          <EmptyTableIcon className="empty-table-icon" />
           <p className="empty-table-msg">No entries yet</p>
           <p className="empty-table-hint">
             Use the form below to add your first data point
@@ -485,20 +406,7 @@ export default function DataTable({
                         title="Delete entry"
                         aria-label="Delete entry"
                       >
-                        <svg
-                          width="14"
-                          height="14"
-                          viewBox="0 0 14 14"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M3.5 3.5L10.5 10.5M10.5 3.5L3.5 10.5"
-                            stroke="currentColor"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                          />
-                        </svg>
+<CloseIcon />
                       </button>
                     </td>
                   </tr>

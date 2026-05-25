@@ -60,7 +60,7 @@ const DEFAULT_STATE = {
     entries: [],
     dateFrom: "",
     dateTo: "",
-    chartConfig: { scopeType: "linear", completedType: "linear", scopeFill: true, completedFill: true, scopeColor: "#6366f1", completedColor: "#10b981" },
+    chartConfig: { scopeType: "linear", completedType: "linear", scopeFill: true, completedFill: true, scopeColor: "#75AADB", completedColor: "#FCBF49", idealColor: "#FFFFFF" },
 };
 
 function loadInitialState() {
@@ -276,7 +276,7 @@ export default function App() {
         setEntries([]);
         setDateFrom("");
         setDateTo("");
-        setChartConfig({ scopeType: "linear", completedType: "linear", scopeFill: true, completedFill: true, scopeColor: "#6366f1", completedColor: "#10b981" });
+        setChartConfig({ scopeType: "linear", completedType: "linear", scopeFill: true, completedFill: true, scopeColor: "#75AADB", completedColor: "#FCBF49", idealColor: "#FFFFFF" });
         setV1Error(false);
     }, []);
 
@@ -303,8 +303,9 @@ export default function App() {
         completedType: "linear",
         scopeFill: true,
         completedFill: true,
-        scopeColor: "#6366f1",
-        completedColor: "#10b981",
+        scopeColor: "#75AADB",
+        completedColor: "#FCBF49",
+        idealColor: "#FFFFFF",
       },
     );
             setV1Error(false);
@@ -320,7 +321,7 @@ export default function App() {
 
     return (
         <div className='app-layout'>
-            <style dangerouslySetInnerHTML={{ __html: cssVarOverrides(chartConfig.scopeColor, chartConfig.completedColor) }} />
+            <style dangerouslySetInnerHTML={{ __html: cssVarOverrides(chartConfig.scopeColor, chartConfig.completedColor, chartConfig.idealColor) }} />
             {/* ── Header ─────────────────────────────────────────────────────── */}
             <header className='app-header'>
                 <div className='header-top'>
@@ -350,14 +351,14 @@ export default function App() {
                         />
                         <path
                             d='M6 18C10 18 12 10 16 10C20 10 22 16 26 16'
-                            stroke='#34d399'
+                            stroke='var(--scope)'
                             strokeWidth='2.5'
                             strokeLinecap='round'
                             fill='none'
                         />
                         <path
                             d='M6 24C10 24 12 18 16 18C20 18 22 22 26 22'
-                            stroke='white'
+                            stroke='var(--completed)'
                             strokeWidth='2.5'
                             strokeLinecap='round'
                             fill='none'

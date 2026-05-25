@@ -78,8 +78,9 @@ function stateToCompact(state) {
   compact.push(cc.completedType === 'stepAfter' ? 1 : 0)
   compact.push(cc.scopeFill !== false ? 1 : 0)
   compact.push(cc.completedFill !== false ? 1 : 0)
-  compact.push(cc.scopeColor || '#6366f1')
-  compact.push(cc.completedColor || '#10b981')
+  compact.push(cc.scopeColor || '#75AADB')
+  compact.push(cc.completedColor || '#FCBF49')
+  compact.push(cc.idealColor || '#FFFFFF')
 
   return compact
 }
@@ -136,7 +137,7 @@ function compactToState(compact) {
   }
 
   // Parse chartConfig for v5+
-  let chartConfig = { scopeType: 'linear', completedType: 'linear', scopeFill: true, completedFill: true, scopeColor: '#6366f1', completedColor: '#10b981' }
+  let chartConfig = { scopeType: 'linear', completedType: 'linear', scopeFill: true, completedFill: true, scopeColor: '#75AADB', completedColor: '#FCBF49', idealColor: '#FFFFFF' }
   if (version >= 5 && i < compact.length && compact[i] === null) {
     i++ // skip chartConfig sentinel
     if (i + 1 < compact.length) {
@@ -152,6 +153,9 @@ function compactToState(compact) {
     }
     if (i + 5 < compact.length && typeof compact[i + 5] === 'string') {
       chartConfig.completedColor = compact[i + 5]
+    }
+    if (i + 6 < compact.length && typeof compact[i + 6] === 'string') {
+      chartConfig.idealColor = compact[i + 6]
     }
   }
 

@@ -27,3 +27,6 @@ package-lock.json
 yarn.lock
 pnpm-lock.yaml
 lerna-lock.yaml
+
+# OS files
+Thumbs.db

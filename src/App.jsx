@@ -53,6 +53,14 @@ function buildSprints(count) {
 
 const DEFAULT_SPRINT_COUNT = 1;
 
+/** Normalize legacy idealColor "#FFFFFF" to "" (now theme-aware) */
+function normalizeIdealColor(cfg) {
+  if (cfg && cfg.idealColor === "#FFFFFF") {
+    return { ...cfg, idealColor: "" };
+  }
+  return cfg;
+}
+
 function formatDate(iso) {
   if (!iso) return "";
   const [y, m, d] = iso.split("-").map(Number);
@@ -92,14 +100,13 @@ function loadInitialState() {
                     entries: decoded.entries,
                     dateFrom: decoded.dateFrom || "",
                     dateTo: decoded.dateTo || "",
-                    chartConfig:
-                        decoded.chartConfig || DEFAULT_STATE.chartConfig,
-                },
-                v1Error: false,
-            };
-        }
+      chartConfig: normalizeIdealColor(decoded.chartConfig || DEFAULT_STATE.chartConfig),
+      v1Error: false,
+    },
     }
-    return { state: DEFAULT_STATE, v1Error: false };
+  }
+  return { state: DEFAULT_STATE, v1Error: false };
+}
 }
 
 export default function App() {
@@ -287,7 +294,7 @@ export default function App() {
         setEntries([]);
         setDateFrom("");
         setDateTo("");
-        setChartConfig({ scopeType: "linear", completedType: "linear", scopeFill: true, completedFill: true, scopeColor: "#75AADB", completedColor: "#FCBF49", idealColor: "#FFFFFF" });
+        setChartConfig({ scopeType: "linear", completedType: "linear", scopeFill: true, completedFill: true, scopeColor: "#75AADB", completedColor: "#FCBF49", idealColor: "" });
         setV1Error(false);
     }, []);
 
@@ -309,7 +316,7 @@ export default function App() {
             setDateFrom(decoded.dateFrom || "");
             setDateTo(decoded.dateTo || "");
     setChartConfig(
-      decoded.chartConfig || {
+      normalizeIdealColor(decoded.chartConfig || {
         scopeType: "linear",
         completedType: "linear",
         scopeFill: true,
@@ -317,7 +324,7 @@ export default function App() {
         scopeColor: "#75AADB",
         completedColor: "#FCBF49",
         idealColor: "",
-      },
+      }),
     );
             setV1Error(false);
         },

@@ -80,9 +80,9 @@ export default function BurnupChart({
         [sprints, entries],
     );
 
-    const idealColor = chartConfig.idealColor || "var(--ideal)"
+    const idealColor = chartConfig.idealColor || "var(--ideal)";
 
-  const hasData = chartData.length > 0;
+    const hasData = chartData.length > 0;
 
     if (!hasData) {
         return (
@@ -164,12 +164,12 @@ export default function BurnupChart({
                         >
                             <stop
                                 offset='0%'
-          stopColor={chartConfig.scopeColor || "#75AADB"}
-          stopOpacity={0.15}
-          />
-          <stop
-            offset='100%'
-            stopColor={chartConfig.scopeColor || "#75AADB"}
+                                stopColor={chartConfig.scopeColor || "#75AADB"}
+                                stopOpacity={0.15}
+                            />
+                            <stop
+                                offset='100%'
+                                stopColor={chartConfig.scopeColor || "#75AADB"}
                                 stopOpacity={0}
                             />
                         </linearGradient>
@@ -182,16 +182,16 @@ export default function BurnupChart({
                         >
                             <stop
                                 offset='0%'
-          stopColor={
-            chartConfig.completedColor || "#FCBF49"
-          }
-          stopOpacity={0.12}
-          />
-          <stop
-            offset='100%'
-            stopColor={
-              chartConfig.completedColor || "#FCBF49"
-            }
+                                stopColor={
+                                    chartConfig.completedColor || "#FCBF49"
+                                }
+                                stopOpacity={0.12}
+                            />
+                            <stop
+                                offset='100%'
+                                stopColor={
+                                    chartConfig.completedColor || "#FCBF49"
+                                }
                                 stopOpacity={0}
                             />
                         </linearGradient>
@@ -200,15 +200,16 @@ export default function BurnupChart({
                     <CartesianGrid
                         strokeDasharray='3 3'
                         stroke='var(--border)'
-                        opacity={0.5}
+                        opacity={0.3}
                         vertical={false}
+                        horizontal={true}
                     />
 
                     <XAxis
                         dataKey='sprint'
                         tick={{ fontSize: 11, fill: "var(--text-dim)" }}
                         tickLine={false}
-                        axisLine={{ stroke: "var(--border)" }}
+                        axisLine={false}
                         tickMargin={8}
                     />
 
@@ -275,17 +276,17 @@ export default function BurnupChart({
                         isAnimationActive={false}
                     />
 
-        {/* Ideal line */}
-        <Line
-          type='linear'
-          dataKey='ideal'
-          name='Ideal'
-          stroke={idealColor}
-          strokeWidth={1}
-          strokeDasharray='8 4'
-          dot={false}
-          activeDot={false}
-        />
+                    {/* Ideal line */}
+                    <Line
+                        type='linear'
+                        dataKey='ideal'
+                        name='Ideal'
+                        stroke={idealColor}
+                        strokeWidth={1}
+                        strokeDasharray='8 4'
+                        dot={false}
+                        activeDot={false}
+                    />
                 </ComposedChart>
             </ResponsiveContainer>
         </div>

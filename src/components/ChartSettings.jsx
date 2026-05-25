@@ -25,10 +25,9 @@ export default function ChartSettings({ chartConfig, onChartConfigChange }) {
   const handleApply = useCallback(() => {
     if (draft) {
       const current = chartConfigRef.current
-      for (const key of Object.keys(draft)) {
-        if (draft[key] !== current[key]) {
-          onChartConfigChange(key, draft[key])
-        }
+      const hasChanges = Object.keys(draft).some(key => draft[key] !== current[key])
+      if (hasChanges) {
+        onChartConfigChange(draft)
       }
     }
     setOpen(false)

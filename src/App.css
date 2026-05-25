@@ -1409,165 +1409,44 @@
   }
 }
 
-/* ─── Snapshot History ─────────────────────────────────────────────────────── */
+/* ─── Undo/Redo Buttons ────────────────────────────────────────────────────── */
 
-.snapshot-empty {
-  font-size: 13px;
-  color: var(--text-dim);
-  margin: 0;
-  text-align: center;
-  padding: 8px 0;
-}
-
-.snapshot-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-.snapshot-list-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-
-.snapshot-count {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-dim);
-}
-
-.snapshot-btn-clear {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 10px;
-  font-family: var(--sans);
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-dim);
-  background: var(--bg-alt);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-
-  &:hover {
-    color: var(--danger);
-    background: var(--danger-bg);
-    border-color: var(--danger-border);
-  }
-}
-
-.snapshot-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--border);
-
-  &:last-child {
-    border-bottom: none;
-    padding-bottom: 0;
-  }
-
-  &:first-child {
-    padding-top: 0;
-  }
-}
-
-.snapshot-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-  flex: 1;
-}
-
-.snapshot-time {
-  font-family: var(--mono);
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--text-dim);
-  order: 2;
-}
-
-.snapshot-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-h);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  order: 1;
-}
-
-.snapshot-actions {
+.undo-redo-group {
   display: flex;
   align-items: center;
   gap: 6px;
+  margin-left: auto;
   flex-shrink: 0;
 }
 
-.snapshot-btn {
+.undo-redo-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background: var(--bg-alt);
+  background: var(--bg-elevated);
   color: var(--text-dim);
   cursor: pointer;
   transition: all var(--transition-fast);
 
-  &:hover {
+  &:hover:not(:disabled) {
     color: var(--text);
     border-color: var(--accent-border);
     background: var(--accent-bg);
   }
-}
 
-.snapshot-btn-open {
-  text-decoration: none;
-
-  &:hover {
-    color: var(--accent);
+  &:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
   }
-}
 
-.snapshot-btn-copy {
-  &:hover {
-    color: var(--accent);
-    border-color: var(--accent-border);
-    background: var(--accent-bg);
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
   }
-}
-
-.snapshot-btn-copied {
-  color: var(--completed) !important;
-  border-color: var(--completed-border) !important;
-  background: var(--completed-bg) !important;
-}
-
-.snapshot-btn-restore {
-  &:hover {
-    color: var(--completed);
-    border-color: var(--completed-border);
-    background: var(--completed-bg);
-  }
-}
-
-.snapshot-restore-wrapper {
-  position: relative;
-}
-
-.snapshot-restore-wrapper .confirm-dialog {
-  right: 0;
-  bottom: calc(100% + 6px);
 }
 
 /* ─── Responsive ────────────────────────────────────────────────────────────── */

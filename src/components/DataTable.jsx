@@ -21,12 +21,12 @@ import { PlusIcon, CloseIcon, EmptyTableIcon } from '../assets/icons'
 /**
  * EntryValueInput — local-state wrapper for existing entry value inputs.
  * Only propagates the value upstream on blur, not on every keystroke.
- * This prevents URL regeneration and snapshot creation while typing.
+ * This prevents URL regeneration and history push while typing.
  */
 function EntryValueInput({ value, index, onEntryChange }) {
   const [local, setLocal] = useState(value)
 
-  // Sync from external value (e.g. after snapshot restore)
+  // Sync from external value (e.g. after undo/redo)
   useEffect(() => {
     setLocal(value)
   }, [value])

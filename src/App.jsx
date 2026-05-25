@@ -23,13 +23,12 @@
  * - Badge shows N (additional sprints), not counting Sprint 0
  */
 
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import BurnupChart from "./components/BurnupChart";
 import StatsBar from "./components/StatsBar";
 import DataTable from "./components/DataTable";
 import ShareFooter from "./components/ShareFooter";
 import Accordion from "./components/Accordion";
-import SnapshotHistory from "./components/SnapshotHistory";
 import { BurnupLogo, PencilIcon } from "./assets/icons";
 import {
     encodeState,
@@ -37,22 +36,9 @@ import {
     readUrlToken,
     writeUrlToken,
 } from "./lib/urlState";
+import useUndoRedo, { DEFAULT_STATE } from "./lib/useUndoRedo";
 import { cssVarOverrides } from "./lib/colors";
 import "./App.css";
-
-const SPRINT_0_ID = "s0";
-const SPRINT_0_NAME = "Sprint 0";
-
-function buildSprints(count) {
-    // count = additional sprints (1..N). Total = count + 1 (including Sprint 0)
-    const sprints = [{ id: SPRINT_0_ID, name: SPRINT_0_NAME }];
-    for (let i = 1; i <= count; i++) {
-        sprints.push({ id: "s" + i, name: "Sprint " + i });
-    }
-    return sprints;
-}
-
-const DEFAULT_SPRINT_COUNT = 1;
 
 /** Normalize legacy idealColor "#FFFFFF" to "" (now theme-aware) */
 function normalizeIdealColor(cfg) {
@@ -73,160 +59,106 @@ function formatDate(iso) {
   });
 }
 
-const DEFAULT_STATE = {
-    title: "",
-    sprintCount: DEFAULT_SPRINT_COUNT,
-    sprints: buildSprints(DEFAULT_SPRINT_COUNT),
-    entries: [],
-    dateFrom: "",
-    dateTo: "",
-    chartConfig: { scopeType: "linear", completedType: "linear", scopeFill: true, completedFill: true, scopeColor: "#75AADB", completedColor: "#FCBF49", idealColor: "" },
-};
-
 function loadInitialState() {
-    const token = readUrlToken();
-    if (token) {
-        const decoded = decodeState(token);
-        if (decoded?.error === "v1_unsupported") {
-            return { state: DEFAULT_STATE, v1Error: true };
-        }
-        if (decoded && decoded.sprints && decoded.entries) {
-            // Derive sprintCount from loaded sprints (total - 1 for Sprint 0)
-            const sprintCount = Math.max(1, decoded.sprints.length - 1);
-            return {
-                state: {
-                    title: decoded.title || "",
-                    sprintCount,
-                    sprints: decoded.sprints,
-                    entries: decoded.entries,
-                    dateFrom: decoded.dateFrom || "",
-                    dateTo: decoded.dateTo || "",
-      chartConfig: normalizeIdealColor(decoded.chartConfig || DEFAULT_STATE.chartConfig),
+  const token = readUrlToken();
+  if (!token) return { state: DEFAULT_STATE, v1Error: false };
+  const decoded = decodeState(token);
+  if (decoded?.error === "v1_unsupported") {
+    return { state: DEFAULT_STATE, v1Error: true };
+  }
+  if (decoded && decoded.sprints && decoded.entries) {
+    const sprintCount = Math.max(1, decoded.sprints.length - 1);
+    return {
+      state: {
+        title: decoded.title || "",
+        sprintCount,
+        sprints: decoded.sprints,
+        entries: decoded.entries,
+        dateFrom: decoded.dateFrom || "",
+        dateTo: decoded.dateTo || "",
+        chartConfig: normalizeIdealColor(decoded.chartConfig || DEFAULT_STATE.chartConfig),
+      },
       v1Error: false,
-    },
-    }
+    };
   }
   return { state: DEFAULT_STATE, v1Error: false };
-}
 }
 
 export default function App() {
     const initial = loadInitialState();
-    const [title, setTitle] = useState(initial.state.title);
-    const [sprintCount, setSprintCount] = useState(initial.state.sprintCount);
-    const [sprints, setSprints] = useState(initial.state.sprints);
-    const [entries, setEntries] = useState(initial.state.entries);
-    const [dateFrom, setDateFrom] = useState(initial.state.dateFrom);
-    const [dateTo, setDateTo] = useState(initial.state.dateTo);
-    const [chartConfig, setChartConfig] = useState(initial.state.chartConfig);
+    const { state, dispatch, undo, redo, canUndo, canRedo } = useUndoRedo(initial.state);
     const [v1Error, setV1Error] = useState(initial.v1Error);
 
-    // ─── Session-only snapshot history ────────────────────────────────────
-    const [snapshots, setSnapshots] = useState([]);
+  const chartRef = useRef(null);
+  const presentRef = useRef(state.present);
 
-    const chartRef = useRef(null);
+  useEffect(() => {
+    presentRef.current = state.present;
+  });
 
     // ─── URL synchronization (debounced) ────────────────────────────────────
     const urlSyncTimer = useRef(null);
-    const lastSnapshotUrl = useRef(null);
 
     useEffect(() => {
         if (urlSyncTimer.current) clearTimeout(urlSyncTimer.current);
 
         urlSyncTimer.current = setTimeout(() => {
-            const state = {
-                title,
-                sprints,
-                entries,
-                dateFrom,
-                dateTo,
-                chartConfig,
-            };
-            const token = encodeState(state);
+            const token = encodeState(state.present);
             writeUrlToken(token);
-
-            // Track snapshot (session-only, max 10)
-            const currentUrl = window.location.href;
-            if (currentUrl !== lastSnapshotUrl.current) {
-                lastSnapshotUrl.current = currentUrl;
-                const now = new Date();
-                const time = now.toLocaleString(undefined, {
-                    month: "short",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    second: "2-digit",
-                });
-                setSnapshots((prev) => {
-                    const next = [
-                        { url: currentUrl, time, title: state.title },
-                        ...prev,
-                    ];
-                    return next.slice(0, 10);
-                });
-            }
         }, 300);
 
         return () => {
             if (urlSyncTimer.current) clearTimeout(urlSyncTimer.current);
         };
-    }, [title, sprints, entries, dateFrom, dateTo, chartConfig]);
+    }, [state.present]);
 
-    // ─── Sprint count management ───────────────────────────────────────────
-    const handleSprintCountChange = useCallback((newCount) => {
-        const count = Math.max(1, Number(newCount) || 1);
-        setSprintCount(count);
-        setSprints((prev) => {
-            const currentCount = prev.length - 1; // subtract Sprint 0
-            if (count === currentCount) return prev;
+    // ─── Keyboard shortcuts ───────────────────────────────────────────────────
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            const isUndo = (e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey;
+            const isRedo = (e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey));
 
-            if (count > currentCount) {
-                // Add sprints
-                const added = [];
-                for (let i = currentCount + 1; i <= count; i++) {
-                    added.push({ id: "s" + i, name: "Sprint " + i });
-                }
-                return [...prev, ...added];
-            } else {
-                // Remove sprints from the end (but never Sprint 0)
-                const kept = prev.slice(0, count + 1); // +1 for Sprint 0
-                // Also remove entries belonging to removed sprints
-                const keptIds = new Set(kept.map((s) => s.id));
-                setEntries((prevEntries) =>
-                    prevEntries.filter((e) => keptIds.has(e.sprintId)),
-                );
-                return kept;
+            if (isUndo && canUndo) {
+                e.preventDefault();
+                undo();
+            } else if (isRedo && canRedo) {
+                e.preventDefault();
+                redo();
             }
-        });
-    }, []);
+        };
 
-    // ─── Sprint badge inline-edit ──────────────────────────────────────────
-    const [editingSprint, setEditingSprint] = useState(false);
-    const [sprintDraft, setSprintDraft] = useState(String(sprintCount));
-    const sprintEditRef = useRef(null);
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [undo, redo, canUndo, canRedo]);
 
-    useEffect(() => {
-        if (editingSprint && sprintEditRef.current) {
-            sprintEditRef.current.focus();
-            sprintEditRef.current.select();
-        }
-    }, [editingSprint]);
+  // ─── Sprint badge inline-edit ──────────────────────────────────────────
+  const [editingSprint, setEditingSprint] = useState(false);
+  const [sprintDraft, setSprintDraft] = useState(String(state.present.sprintCount));
+  const sprintEditRef = useRef(null);
 
-    useEffect(() => {
-        setSprintDraft(String(sprintCount));
-    }, [sprintCount]);
+  useEffect(() => {
+    if (editingSprint && sprintEditRef.current) {
+      sprintEditRef.current.focus();
+      sprintEditRef.current.select();
+    }
+  }, [editingSprint]);
 
-    const commitSprintEdit = useCallback(() => {
-        const val = Math.max(1, parseInt(sprintDraft, 10) || 1);
-        setSprintDraft(String(val));
-        handleSprintCountChange(val);
-        setEditingSprint(false);
-    }, [sprintDraft, handleSprintCountChange]);
+  const openSprintEdit = useCallback(() => {
+    setSprintDraft(String(state.present.sprintCount));
+    setEditingSprint(true);
+  }, [state.present.sprintCount]);
 
-    const cancelSprintEdit = useCallback(() => {
-        setSprintDraft(String(sprintCount));
-        setEditingSprint(false);
-    }, [sprintCount]);
+  const commitSprintEdit = useCallback(() => {
+    const val = Math.max(1, parseInt(sprintDraft, 10) || 1);
+    setSprintDraft(String(val));
+    dispatch({ type: 'SET_SPRINT_COUNT', payload: val });
+    setEditingSprint(false);
+  }, [sprintDraft, dispatch]);
+
+  const cancelSprintEdit = useCallback(() => {
+    setSprintDraft(String(state.present.sprintCount));
+    setEditingSprint(false);
+  }, [state.present.sprintCount]);
 
     const handleSprintKeyDown = useCallback(
         (e) => {
@@ -262,85 +194,50 @@ export default function App() {
     // ─── Entry mutation handlers ────────────────────────────────────────────
     const handleEntryAdd = useCallback((sprintId, tipo, valor, mode) => {
         if (!sprintId) return;
-        setEntries((prev) => [
-            ...prev,
-            {
-                sprintId,
-                tipo,
-                valor: Number(valor) || 0,
-                mode: mode || "relative",
-            },
-        ]);
-    }, []);
+        dispatch({
+            type: 'SET_ENTRIES',
+            payload: [
+                ...presentRef.current.entries,
+                {
+                    sprintId,
+                    tipo,
+                    valor: Number(valor) || 0,
+                    mode: mode || "relative",
+                },
+            ],
+        });
+    }, [dispatch]);
 
     const handleEntryChange = useCallback((originalIndex, field, value) => {
-        setEntries((prev) => {
-            const updated = [...prev];
-            updated[originalIndex] = {
-                ...updated[originalIndex],
-                [field]: value,
-            };
-            return updated;
+        dispatch({
+            type: 'SET_ENTRIES',
+            payload: presentRef.current.entries.map((entry, i) =>
+                i === originalIndex ? { ...entry, [field]: value } : entry
+            ),
         });
-    }, []);
+    }, [dispatch]);
 
     const handleEntryDelete = useCallback((originalIndex) => {
-        setEntries((prev) => prev.filter((_, i) => i !== originalIndex));
-    }, []);
+        dispatch({
+            type: 'SET_ENTRIES',
+            payload: presentRef.current.entries.filter((_, i) => i !== originalIndex),
+        });
+    }, [dispatch]);
 
     const handleClear = useCallback(() => {
-        setTitle("");
-        setSprintCount(DEFAULT_SPRINT_COUNT);
-        setSprints(buildSprints(DEFAULT_SPRINT_COUNT));
-        setEntries([]);
-        setDateFrom("");
-        setDateTo("");
-        setChartConfig({ scopeType: "linear", completedType: "linear", scopeFill: true, completedFill: true, scopeColor: "#75AADB", completedColor: "#FCBF49", idealColor: "" });
+        dispatch({ type: 'RESET' });
         setV1Error(false);
-    }, []);
+    }, [dispatch]);
 
-    // ─── Restore snapshot ─────────────────────────────────────────────────
-    const handleRestoreSnapshot = useCallback(
-        (index) => {
-            const snap = snapshots[index];
-            if (!snap) return;
-            const params = new URLSearchParams(new URL(snap.url).search);
-            const token = params.get("data");
-            if (!token) return;
-            const decoded = decodeState(token);
-            if (!decoded?.sprints) return;
-            const sprintCount = Math.max(1, decoded.sprints.length - 1);
-            setTitle(decoded.title || "");
-            setSprintCount(sprintCount);
-            setSprints(decoded.sprints);
-            setEntries(decoded.entries);
-            setDateFrom(decoded.dateFrom || "");
-            setDateTo(decoded.dateTo || "");
-    setChartConfig(
-      normalizeIdealColor(decoded.chartConfig || {
-        scopeType: "linear",
-        completedType: "linear",
-        scopeFill: true,
-        completedFill: true,
-        scopeColor: "#75AADB",
-        completedColor: "#FCBF49",
-        idealColor: "",
-      }),
-    );
-            setV1Error(false);
-        },
-        [snapshots],
-    );
-
-    const handleChartConfigChange = useCallback((key, value) => {
-        setChartConfig((prev) => ({ ...prev, [key]: value }));
-    }, []);
+    const handleChartConfigChange = useCallback((fullConfig) => {
+        dispatch({ type: 'SET_CHART_CONFIG', payload: fullConfig });
+    }, [dispatch]);
 
     // ─── Render ─────────────────────────────────────────────────────────────
 
     return (
         <div className='app-layout'>
-            <style dangerouslySetInnerHTML={{ __html: cssVarOverrides(chartConfig.scopeColor, chartConfig.completedColor, chartConfig.idealColor) }} />
+            <style dangerouslySetInnerHTML={{ __html: cssVarOverrides(state.present.chartConfig.scopeColor, state.present.chartConfig.completedColor, state.present.chartConfig.idealColor) }} />
             {/* ── Header ─────────────────────────────────────────────────────── */}
             <header className='app-header'>
                 <div className='header-top'>
@@ -351,8 +248,8 @@ export default function App() {
                             <input
                                 type='text'
                                 className='title-input'
-                                value={title}
-                                onChange={(e) => setTitle(e.target.value)}
+                                value={state.present.title}
+                                onChange={(e) => dispatch({ type: 'SET_TITLE', payload: e.target.value })}
                                 placeholder='Burnup'
                                 aria-label='Chart title'
                             />
@@ -368,9 +265,9 @@ export default function App() {
                                         ref={dateFromEditRef}
                                         type='date'
                                         className='date-input-inline'
-                                        value={dateFrom}
+                                        value={state.present.dateFrom}
                                         onChange={(e) =>
-                                            setDateFrom(e.target.value)
+                                            dispatch({ type: 'SET_DATE_FROM', payload: e.target.value })
                                         }
                                         onBlur={() => setEditingDateFrom(false)}
                                         onKeyDown={(e) => {
@@ -385,7 +282,7 @@ export default function App() {
                                         onClick={() => setEditingDateFrom(true)}
                                         title='Click to edit start date'
                                     >
-                                        {formatDate(dateFrom) || "sin fecha inicio"}
+                                        {formatDate(state.present.dateFrom) || "sin fecha inicio"}
                                     </button>
                                 )}
                                 <span className='date-arrow'>→</span>
@@ -394,9 +291,9 @@ export default function App() {
                                         ref={dateToEditRef}
                                         type='date'
                                         className='date-input-inline'
-                                        value={dateTo}
+                                        value={state.present.dateTo}
                                         onChange={(e) =>
-                                            setDateTo(e.target.value)
+                                            dispatch({ type: 'SET_DATE_TO', payload: e.target.value })
                                         }
                                         onBlur={() => setEditingDateTo(false)}
                                         onKeyDown={(e) => {
@@ -411,7 +308,7 @@ export default function App() {
                                         onClick={() => setEditingDateTo(true)}
                                         title='Click to edit end date'
                                     >
-                                        {formatDate(dateTo) || "sin fecha fin"}
+                                        {formatDate(state.present.dateTo) || "sin fecha fin"}
                                     </button>
                                 )}
                             </span>
@@ -433,16 +330,41 @@ export default function App() {
                             ) : (
                                 <button
                                     className='sprint-badge'
-                                    onClick={() => setEditingSprint(true)}
+                                    onClick={openSprintEdit}
                                     title='Click to edit sprint count'
-                                    aria-label={`${sprintCount} sprint${sprintCount !== 1 ? "s" : ""} — click to edit`}
+                                    aria-label={`${state.present.sprintCount} sprint${state.present.sprintCount !== 1 ? "s" : ""} — click to edit`}
                                 >
-                                    {sprintCount} sprint
-                                    {sprintCount !== 1 ? "s" : ""}
+                                    {state.present.sprintCount} sprint
+                                    {state.present.sprintCount !== 1 ? "s" : ""}
           <PencilIcon className='sprint-badge-icon' />
                                 </button>
                             )}
                         </div>
+                    </div>
+
+                    <div className='undo-redo-group'>
+                        <button
+                            className='undo-redo-btn'
+                            onClick={undo}
+                            disabled={!canUndo}
+                            aria-label='Undo'
+                            title='Undo (Ctrl+Z / Cmd+Z)'
+                        >
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M4 8L7 5M4 8L7 11M4 8H12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                        </button>
+                        <button
+                            className='undo-redo-btn'
+                            onClick={redo}
+                            disabled={!canRedo}
+                            aria-label='Redo'
+                            title='Redo (Ctrl+Y / Cmd+Shift+Z)'
+                        >
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 8L9 5M12 8L9 11M12 8H4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                        </button>
                     </div>
                 </div>
 
@@ -462,14 +384,14 @@ export default function App() {
             </header>
 
             {/* ── Stats Bar ────────────────────────────────────────────────── */}
-            <StatsBar entries={entries} sprints={sprints} />
+            <StatsBar entries={state.present.entries} sprints={state.present.sprints} />
 
             {/* ── Chart Zone ────────────────────────────────────────────────── */}
             <section className='card chart-card' ref={chartRef}>
                 <BurnupChart
-                    sprints={sprints}
-                    entries={entries}
-                    chartConfig={chartConfig}
+                    sprints={state.present.sprints}
+                    entries={state.present.entries}
+                    chartConfig={state.present.chartConfig}
                     onChartConfigChange={handleChartConfigChange}
                 />
             </section>
@@ -477,12 +399,12 @@ export default function App() {
             {/* ── Data Table (accordion) ──────────────────────────────────── */}
             <Accordion
                 title='Data Entries'
-                badge={entries.length || undefined}
+                badge={state.present.entries.length || undefined}
                 padded={false}
             >
                 <DataTable
-                    sprints={sprints}
-                    entries={entries}
+                    sprints={state.present.sprints}
+                    entries={state.present.entries}
                     onEntryChange={handleEntryChange}
                     onEntryDelete={handleEntryDelete}
                     onEntryAdd={handleEntryAdd}
@@ -491,19 +413,6 @@ export default function App() {
 
             {/* ── Footer: Share ─────────────────────────────────────────────── */}
             <ShareFooter chartRef={chartRef} onClear={handleClear} />
-
-            {/* ── Snapshot History (accordion, session-only) ─────────────────── */}
-            <Accordion
-                title='Recent Snapshots'
-                badge={snapshots.length || undefined}
-                defaultOpen={false}
-            >
-                <SnapshotHistory
-                    snapshots={snapshots}
-                    onRestore={handleRestoreSnapshot}
-                    onClearHistory={() => setSnapshots([])}
-                />
-            </Accordion>
         </div>
     );
 }

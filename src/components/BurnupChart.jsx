@@ -80,7 +80,9 @@ export default function BurnupChart({
         [sprints, entries],
     );
 
-    const hasData = chartData.length > 0;
+    const idealColor = chartConfig.idealColor || "var(--ideal)"
+
+  const hasData = chartData.length > 0;
 
     if (!hasData) {
         return (
@@ -278,7 +280,7 @@ export default function BurnupChart({
           type='linear'
           dataKey='ideal'
           name='Ideal'
-          stroke={chartConfig.idealColor || "#FFFFFF"}
+          stroke={idealColor}
           strokeWidth={1}
           strokeDasharray='8 4'
           dot={false}

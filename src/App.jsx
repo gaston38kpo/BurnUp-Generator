@@ -71,7 +71,7 @@ const DEFAULT_STATE = {
     entries: [],
     dateFrom: "",
     dateTo: "",
-    chartConfig: { scopeType: "linear", completedType: "linear", scopeFill: true, completedFill: true, scopeColor: "#75AADB", completedColor: "#FCBF49", idealColor: "#FFFFFF" },
+    chartConfig: { scopeType: "linear", completedType: "linear", scopeFill: true, completedFill: true, scopeColor: "#75AADB", completedColor: "#FCBF49", idealColor: "" },
 };
 
 function loadInitialState() {
@@ -316,7 +316,7 @@ export default function App() {
         completedFill: true,
         scopeColor: "#75AADB",
         completedColor: "#FCBF49",
-        idealColor: "#FFFFFF",
+        idealColor: "",
       },
     );
             setV1Error(false);

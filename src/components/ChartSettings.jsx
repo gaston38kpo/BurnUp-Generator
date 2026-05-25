@@ -206,7 +206,11 @@ function LineConfig({ label, dotClass, typeKey, fillKey, colorKey, defaultColor,
 }
 
 function IdealConfig({ colorKey, defaultColor, config, onChange }) {
-  const colorValue = config[colorKey] || defaultColor
+  const computedDefault = typeof window !== 'undefined'
+    ? getComputedStyle(document.documentElement).getPropertyValue('--ideal').trim()
+    : '#9ca3af'
+  const colorValue = config[colorKey] || computedDefault
+  const isCustom = !!config[colorKey]
   const colorInputRef = useRef(null)
 
   return (
@@ -231,15 +235,15 @@ function IdealConfig({ colorKey, defaultColor, config, onChange }) {
             aria-label="Ideal color picker"
           />
         </button>
-        {colorValue !== defaultColor && (
+        {isCustom && (
           <button
             className="chart-settings-color-reset"
-            onClick={() => onChange(colorKey, defaultColor)}
+            onClick={() => onChange(colorKey, '')}
             title="Reset to default color"
             aria-label="Reset Ideal color"
           >
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M2 4.5H9.5C10.8807 4.5 12 5.61929 12 7C12 8.38071 10.8807 9.5 9.5 9.5H3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M2 4.5H9.5C10.8807 4.5 12 5.61929 12 7C12 8.38071 10.8807 9.5 9.5 9.5H3.3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
               <path d="M4.5 2L2 4.5L4.5 7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </button>

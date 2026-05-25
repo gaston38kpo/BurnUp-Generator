@@ -1,16 +1,35 @@
-# React + Vite
+# BurnUp-Generator
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Sprint-based burnup chart generator. Visualize scope, completed work, and the ideal reference line across sprints.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Interactive burnup chart with Scope, Completed, and Ideal lines
+- Per-line customization: line type (linear/step), area fill, and color
+- Settings apply on explicit confirmation (draft pattern)
+- URL-persisted state — share charts via link
+- Snapshot history (session-only)
+- Dark/light theme with system preference detection
+- GitHub Pages deployment ready
 
-## React Compiler
+## Getting Started
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+pnpm install
+pnpm dev
+```
 
-## Expanding the ESLint configuration
+## Deploy to GitHub Pages
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+pnpm deploy
+```
+
+This builds the project and pushes the `dist/` folder to the `gh-pages` branch.
+
+## Tech Stack
+
+- React 19 + Vite
+- Recharts
+- pako (URL compression)
+- html-to-image (chart export)

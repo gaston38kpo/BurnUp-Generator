@@ -28,8 +28,8 @@
   --completed: #FCBF49;
   --completed-bg: rgba(252, 191, 73, 0.08);
   --completed-border: rgba(252, 191, 73, 0.25);
-  --ideal: #9ca3af;
-  --ideal-bg: rgba(156, 163, 175, 0.08);
+  --ideal: #000000;
+  --ideal-bg: rgba(0, 0, 0, 0.08);
   --danger: #ef4444;
   --danger-bg: rgba(239, 68, 68, 0.08);
   --danger-border: rgba(239, 68, 68, 0.25);

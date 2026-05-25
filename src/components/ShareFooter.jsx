@@ -22,7 +22,7 @@ const LIGHT_VARS = {
   '--text-h': '#111827',
   '--text-dim': '#9ca3af',
   '--accent': '#6366f1',
-  '--ideal': '#9ca3af',
+  '--ideal': '#000000',
 }
 
 /** Dark-theme CSS variable overrides for export */

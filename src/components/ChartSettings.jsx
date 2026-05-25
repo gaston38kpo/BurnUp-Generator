@@ -208,7 +208,7 @@ function LineConfig({ label, dotClass, typeKey, fillKey, colorKey, defaultColor,
 function IdealConfig({ colorKey, defaultColor, config, onChange }) {
   const computedDefault = typeof window !== 'undefined'
     ? getComputedStyle(document.documentElement).getPropertyValue('--ideal').trim()
-    : '#9ca3af'
+    : '#000000'
   const colorValue = config[colorKey] || computedDefault
   const isCustom = !!config[colorKey]
   const colorInputRef = useRef(null)

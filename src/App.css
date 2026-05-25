@@ -1491,15 +1491,17 @@
   font-size: 11px;
   font-weight: 500;
   color: var(--text-dim);
+  order: 2;
 }
 
 .snapshot-title {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
-  color: var(--text);
+  color: var(--text-h);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  order: 1;
 }
 
 .snapshot-actions {

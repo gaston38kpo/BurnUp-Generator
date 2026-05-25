@@ -53,6 +53,17 @@ function buildSprints(count) {
 
 const DEFAULT_SPRINT_COUNT = 1;
 
+function formatDate(iso) {
+  if (!iso) return "";
+  const [y, m, d] = iso.split("-").map(Number);
+  const date = new Date(y, m - 1, d);
+  return date.toLocaleDateString(undefined, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
 const DEFAULT_STATE = {
     title: "",
     sprintCount: DEFAULT_SPRINT_COUNT,
@@ -325,46 +336,55 @@ export default function App() {
             {/* ── Header ─────────────────────────────────────────────────────── */}
             <header className='app-header'>
                 <div className='header-top'>
-                    <svg
-                        className='header-icon'
-                        viewBox='0 0 32 32'
-                        fill='none'
-                        xmlns='http://www.w3.org/2000/svg'
-                    >
-                        <rect
-                            width='32'
-                            height='32'
-                            rx='8'
-                            fill='var(--accent)'
-                        />
-                        <path
-                            d='M6 24V8'
-                            stroke='white'
-                            strokeWidth='2.5'
-                            strokeLinecap='round'
-                        />
-                        <path
-                            d='M6 24H26'
-                            stroke='white'
-                            strokeWidth='2.5'
-                            strokeLinecap='round'
-                        />
-                        <path
-                            d='M6 18C10 18 12 10 16 10C20 10 22 16 26 16'
-                            stroke='var(--scope)'
-                            strokeWidth='2.5'
-                            strokeLinecap='round'
-                            fill='none'
-                        />
-                        <path
-                            d='M6 24C10 24 12 18 16 18C20 18 22 22 26 22'
-                            stroke='var(--completed)'
-                            strokeWidth='2.5'
-                            strokeLinecap='round'
-                            fill='none'
-                            opacity='0.5'
-                        />
-                    </svg>
+        <svg
+          className='header-icon'
+          viewBox='0 0 32 32'
+          fill='none'
+          xmlns='http://www.w3.org/2000/svg'
+        >
+          <rect
+            width='32'
+            height='32'
+            rx='8'
+            fill='var(--accent)'
+          />
+          <path
+            d='M6 24V6'
+            stroke='white'
+            strokeWidth='1.5'
+            strokeLinecap='round'
+            opacity='0.4'
+          />
+          <path
+            d='M6 24H26'
+            stroke='white'
+            strokeWidth='1.5'
+            strokeLinecap='round'
+            opacity='0.4'
+          />
+          <path
+            d='M6 8H26'
+            stroke='white'
+            strokeWidth='1.5'
+            strokeLinecap='round'
+            opacity='0.4'
+            strokeDasharray='3 2'
+          />
+          <path
+            d='M6 22C9 22 11 16 14 14C17 12 19 10 26 8'
+            stroke='var(--scope)'
+            strokeWidth='2.5'
+            strokeLinecap='round'
+            fill='none'
+          />
+          <path
+            d='M6 22C9 22 12 18 16 14C20 10 22 10 26 10'
+            stroke='var(--completed)'
+            strokeWidth='2.5'
+            strokeLinecap='round'
+            fill='none'
+          />
+        </svg>
 
                     <div className='header-text'>
                         <h1 className='app-title'>
@@ -405,7 +425,7 @@ export default function App() {
                                         onClick={() => setEditingDateFrom(true)}
                                         title='Click to edit start date'
                                     >
-                                        {dateFrom || "sin fecha inicio"}
+                                        {formatDate(dateFrom) || "sin fecha inicio"}
                                     </button>
                                 )}
                                 <span className='date-arrow'>→</span>
@@ -431,7 +451,7 @@ export default function App() {
                                         onClick={() => setEditingDateTo(true)}
                                         title='Click to edit end date'
                                     >
-                                        {dateTo || "sin fecha fin"}
+                                        {formatDate(dateTo) || "sin fecha fin"}
                                     </button>
                                 )}
                             </span>

@@ -8,7 +8,7 @@
  */
 import { useState, useCallback } from 'react'
 import { toPng } from 'html-to-image'
-import { ImageIcon } from '../assets/icons'
+import { CopyIcon } from '../assets/icons'
 
 export default function ChartCopyButton({ chartRef }) {
   const [exporting, setExporting] = useState(false)
@@ -74,7 +74,7 @@ export default function ChartCopyButton({ chartRef }) {
         title="Copy chart as image"
         aria-label="Copy chart as image"
       >
-        <ImageIcon />
+        <CopyIcon />
       </button>
       {toast && <div className="toast">{toast}</div>}
     </>

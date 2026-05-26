@@ -281,175 +281,167 @@ export default function App() {
         <div className='app-layout'>
             <style dangerouslySetInnerHTML={{ __html: cssVarOverrides(state.present.chartConfig.scopeColor, state.present.chartConfig.completedColor, state.present.chartConfig.idealColor) }} />
             {/* ── Header ─────────────────────────────────────────────────────── */}
-            <header className='app-header'>
-                <div className='header-top'>
-        <BurnupLogo className='header-icon' />
+<header className='app-header'>
+      <div className='header-row-primary'>
+        <div className='header-identity'>
+          <BurnupLogo className='header-icon' />
+          <input
+            type='text'
+            className='title-input'
+            value={state.present.title}
+            onChange={(e) => dispatch({ type: 'SET_TITLE', payload: e.target.value })}
+            placeholder='Burnup'
+            aria-label='Chart title'
+          />
+        </div>
+        <div className='undo-redo-group'>
+          <button
+            className='undo-redo-btn'
+            onClick={undo}
+            disabled={!canUndo}
+            aria-label='Undo'
+            title='Undo (Ctrl+Z / Cmd+Z)'
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 8L7 5M4 8L7 11M4 8H12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+          <button
+            className='undo-redo-btn'
+            onClick={redo}
+            disabled={!canRedo}
+            aria-label='Redo'
+            title='Redo (Ctrl+Y / Cmd+Shift+Z)'
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 8L9 5M12 8L9 11M12 8H4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div className='header-row-meta'>
+        <div className='meta-dates-group'>
+          {editingDateFrom ? (
+            <input
+              ref={dateFromEditRef}
+              type='date'
+              className='date-input-inline'
+              value={state.present.dateFrom}
+              onChange={(e) =>
+                dispatch({ type: 'SET_DATE_FROM', payload: e.target.value })
+              }
+              onBlur={() => setEditingDateFrom(false)}
+              onKeyDown={(e) => {
+                if (e.key === "Escape")
+                  setEditingDateFrom(false);
+              }}
+              aria-label='Start date'
+            />
+          ) : (
+            <button
+              className='date-display'
+              onClick={() => setEditingDateFrom(true)}
+              title='Click to edit start date'
+            >
+              {formatDate(state.present.dateFrom) || "sin fecha inicio"}
+            </button>
+          )}
+          <span className='date-arrow'>→</span>
+          {editingDateTo ? (
+            <input
+              ref={dateToEditRef}
+              type='date'
+              className='date-input-inline'
+              value={state.present.dateTo}
+              onChange={(e) =>
+                dispatch({ type: 'SET_DATE_TO', payload: e.target.value })
+              }
+              onBlur={() => setEditingDateTo(false)}
+              onKeyDown={(e) => {
+                if (e.key === "Escape")
+                  setEditingDateTo(false);
+              }}
+              aria-label='End date'
+            />
+          ) : (
+            <button
+              className='date-display'
+              onClick={() => setEditingDateTo(true)}
+              title='Click to edit end date'
+            >
+              {formatDate(state.present.dateTo) || "sin fecha fin"}
+            </button>
+          )}
+        </div>
+        {editingSprint ? (
+          <input
+            ref={sprintEditRef}
+            type='number'
+            className='sprint-badge-input'
+            value={sprintDraft}
+            min={1}
+            step={1}
+            onChange={(e) =>
+              setSprintDraft(e.target.value)
+            }
+            onBlur={commitSprintEdit}
+            onKeyDown={handleSprintKeyDown}
+            aria-label='Number of additional sprints'
+          />
+        ) : (
+          <button
+            className='sprint-badge'
+            onClick={openSprintEdit}
+            title='Click to edit sprint count'
+            aria-label={`${state.present.sprintCount} sprint${state.present.sprintCount !== 1 ? "s" : ""} — click to edit`}
+          >
+            {state.present.sprintCount} sprint
+            {state.present.sprintCount !== 1 ? "s" : ""}
+            <PencilIcon className='sprint-badge-icon' />
+          </button>
+        )}
+        {editingOffset ? (
+          <input
+            ref={offsetEditRef}
+            type='number'
+            className='offset-badge-input'
+            value={offsetDraft}
+            min={0}
+            step={1}
+            onChange={(e) =>
+              setOffsetDraft(e.target.value)
+            }
+            onBlur={commitOffsetEdit}
+            onKeyDown={handleOffsetKeyDown}
+            aria-label='Sprint offset'
+          />
+        ) : (
+          <button
+            className='offset-badge'
+            onClick={openOffsetEdit}
+            title='Click to edit sprint offset'
+            aria-label={`Offset ${state.present.sprintOffset} — click to edit`}
+          >
+            +{state.present.sprintOffset}
+            <PencilIcon className='sprint-badge-icon' />
+          </button>
+        )}
+      </div>
 
-                    <div className='header-text'>
-                        <h1 className='app-title'>
-                            <input
-                                type='text'
-                                className='title-input'
-                                value={state.present.title}
-                                onChange={(e) => dispatch({ type: 'SET_TITLE', payload: e.target.value })}
-                                placeholder='Burnup'
-                                aria-label='Chart title'
-                            />
-                        </h1>
-
-                        <div className='header-meta'>
-                            <p className='app-subtitle'>
-                                BurnUp Chart Generator
-                            </p>
-                            <span className='date-range'>
-                                {editingDateFrom ? (
-                                    <input
-                                        ref={dateFromEditRef}
-                                        type='date'
-                                        className='date-input-inline'
-                                        value={state.present.dateFrom}
-                                        onChange={(e) =>
-                                            dispatch({ type: 'SET_DATE_FROM', payload: e.target.value })
-                                        }
-                                        onBlur={() => setEditingDateFrom(false)}
-                                        onKeyDown={(e) => {
-                                            if (e.key === "Escape")
-                                                setEditingDateFrom(false);
-                                        }}
-                                        aria-label='Start date'
-                                    />
-                                ) : (
-                                    <button
-                                        className='date-display'
-                                        onClick={() => setEditingDateFrom(true)}
-                                        title='Click to edit start date'
-                                    >
-                                        {formatDate(state.present.dateFrom) || "sin fecha inicio"}
-                                    </button>
-                                )}
-                                <span className='date-arrow'>→</span>
-                                {editingDateTo ? (
-                                    <input
-                                        ref={dateToEditRef}
-                                        type='date'
-                                        className='date-input-inline'
-                                        value={state.present.dateTo}
-                                        onChange={(e) =>
-                                            dispatch({ type: 'SET_DATE_TO', payload: e.target.value })
-                                        }
-                                        onBlur={() => setEditingDateTo(false)}
-                                        onKeyDown={(e) => {
-                                            if (e.key === "Escape")
-                                                setEditingDateTo(false);
-                                        }}
-                                        aria-label='End date'
-                                    />
-                                ) : (
-                                    <button
-                                        className='date-display'
-                                        onClick={() => setEditingDateTo(true)}
-                                        title='Click to edit end date'
-                                    >
-                                        {formatDate(state.present.dateTo) || "sin fecha fin"}
-                                    </button>
-                                )}
-                            </span>
-                            {editingSprint ? (
-                                <input
-                                    ref={sprintEditRef}
-                                    type='number'
-                                    className='sprint-badge-input'
-                                    value={sprintDraft}
-                                    min={1}
-                                    step={1}
-                                    onChange={(e) =>
-                                        setSprintDraft(e.target.value)
-                                    }
-                                    onBlur={commitSprintEdit}
-                                    onKeyDown={handleSprintKeyDown}
-                                    aria-label='Number of additional sprints'
-                                />
-                            ) : (
-                                <button
-                                    className='sprint-badge'
-                                    onClick={openSprintEdit}
-                                    title='Click to edit sprint count'
-                                    aria-label={`${state.present.sprintCount} sprint${state.present.sprintCount !== 1 ? "s" : ""} — click to edit`}
-                                >
-                                    {state.present.sprintCount} sprint
-                                    {state.present.sprintCount !== 1 ? "s" : ""}
-          <PencilIcon className='sprint-badge-icon' />
-                                </button>
-                            )}
-                            {editingOffset ? (
-                                <input
-                                    ref={offsetEditRef}
-                                    type='number'
-                                    className='offset-badge-input'
-                                    value={offsetDraft}
-                                    min={0}
-                                    step={1}
-                                    onChange={(e) =>
-                                        setOffsetDraft(e.target.value)
-                                    }
-                                    onBlur={commitOffsetEdit}
-                                    onKeyDown={handleOffsetKeyDown}
-                                    aria-label='Sprint offset'
-                                />
-                            ) : (
-                                <button
-                                    className='offset-badge'
-                                    onClick={openOffsetEdit}
-                                    title='Click to edit sprint offset'
-                                    aria-label={`Offset ${state.present.sprintOffset} — click to edit`}
-                                >
-                                    +{state.present.sprintOffset}
-          <PencilIcon className='sprint-badge-icon' />
-                                </button>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className='undo-redo-group'>
-                        <button
-                            className='undo-redo-btn'
-                            onClick={undo}
-                            disabled={!canUndo}
-                            aria-label='Undo'
-                            title='Undo (Ctrl+Z / Cmd+Z)'
-                        >
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M4 8L7 5M4 8L7 11M4 8H12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                        </button>
-                        <button
-                            className='undo-redo-btn'
-                            onClick={redo}
-                            disabled={!canRedo}
-                            aria-label='Redo'
-                            title='Redo (Ctrl+Y / Cmd+Shift+Z)'
-                        >
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M12 8L9 5M12 8L9 11M12 8H4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-
-                {v1Error && (
-                    <div className='v1-error-banner'>
-                        <span>
-                            This link uses an older format. Please start fresh.
-                        </span>
-                        <button
-                            onClick={() => setV1Error(false)}
-                            aria-label='Dismiss'
-                        >
-                            &times;
-                        </button>
-                    </div>
-                )}
-            </header>
+      {v1Error && (
+        <div className='v1-error-banner'>
+          <span>
+            This link uses an older format. Please start fresh.
+          </span>
+          <button
+            onClick={() => setV1Error(false)}
+            aria-label='Dismiss'
+          >
+            &times;
+          </button>
+        </div>
+      )}
+    </header>
 
             {/* ── Stats Bar ────────────────────────────────────────────────── */}
             <StatsBar entries={state.present.entries} sprints={state.present.sprints} />

@@ -23,14 +23,17 @@
   padding: 28px 0 0;
 }
 
-.header-top {
+.header-row-primary {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: space-between;
   gap: 12px;
-  margin-bottom: 20px;
 }
 
-.header-text {
+.header-identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   flex: 1;
   min-width: 0;
 }
@@ -42,18 +45,12 @@
   border-radius: var(--radius-lg);
 }
 
-.app-title {
+.title-input {
   font-size: 24px;
   font-weight: 800;
   letter-spacing: -0.6px;
-  margin: 0;
   line-height: 1.1;
   color: var(--text-h);
-}
-
-.title-input {
-  font: inherit;
-  color: inherit;
   background: transparent;
   border: none;
   border-bottom: 2px solid transparent;
@@ -76,24 +73,15 @@
   }
 }
 
-.app-subtitle {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-dim);
-  margin: 0;
-  letter-spacing: 0.2px;
-}
-
-.header-meta {
+.header-row-meta {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-top: 2px;
+  gap: 8px;
+  margin-top: 10px;
   flex-wrap: wrap;
-  justify-content: space-between;
 }
 
-.date-range {
+.meta-dates-group {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -1503,7 +1491,6 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-left: auto;
   flex-shrink: 0;
 }
 
@@ -1545,7 +1532,12 @@
     gap: 12px;
   }
 
-  .app-title { font-size: 20px; }
+  .title-input { font-size: 20px; }
+
+  .header-row-meta {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
 
   .chart-card { padding: 12px 8px 8px; }
   .table-card { padding: 14px 12px; }

@@ -147,7 +147,7 @@ export default function DataTable({
   const tplModeClass = tplScoped ? 'tpl-scope' : 'tpl-completed'
 
   return (
-    <div className="data-table-container">
+    <div>
 
       {/* ── Entry Template Form ────────────────────────────────────── */}
       <div className={`entry-template ${tplModeClass}`}>
@@ -271,7 +271,6 @@ export default function DataTable({
             <tbody>
               {displayEntries.map((entry) => {
                 const scoped = isScope(entry.tipo)
-                const typeClass = scoped ? 'row-scope' : 'row-completed'
                 const cumVal = sprintMap.get(entry.sprintId)?.[entry.tipo.toLowerCase()] ?? 0
                 const sprintName =
                   sprints.find((s) => s.id === entry.sprintId)?.name ||
@@ -285,7 +284,7 @@ export default function DataTable({
                 const entryMode = entry.mode || 'relative'
 
                 return (
-                  <tr key={entry.id} className={typeClass}>
+                  <tr key={entry.id}>
                     <td className="col-sprint">
                       <select
                         className="input-sprint"

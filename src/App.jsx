@@ -38,6 +38,7 @@ import {
 } from "./lib/urlState";
 import useUndoRedo, { DEFAULT_STATE } from "./lib/useUndoRedo";
 import { cssVarOverrides } from "./lib/colors";
+import { formatDate } from "./lib/formatDate.js";
 import "./App.css";
 
 /** Normalize legacy idealColor "#FFFFFF" to "" (now theme-aware) */
@@ -46,17 +47,6 @@ function normalizeIdealColor(cfg) {
     return { ...cfg, idealColor: "" };
   }
   return cfg;
-}
-
-function formatDate(iso) {
-  if (!iso) return "";
-  const [y, m, d] = iso.split("-").map(Number);
-  const date = new Date(y, m - 1, d);
-  return date.toLocaleDateString(undefined, {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
 }
 
 function loadInitialState() {

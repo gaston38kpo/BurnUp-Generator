@@ -22,6 +22,7 @@ import {
     ResponsiveContainer,
 } from "recharts";
 import { computeChartData } from "../lib/chartData";
+import { formatDate } from "../lib/formatDate.js";
 import ChartSettings from "./ChartSettings";
 import ChartCopyButton from "./ChartCopyButton";
 
@@ -70,18 +71,6 @@ function CustomTooltip({ active, payload, label }) {
     );
 }
 
-/** Format an ISO date string as "25 May 2026" (locale-aware short form). */
-function formatChartDate(iso) {
-  if (!iso) return "";
-  const [y, m, d] = iso.split("-").map(Number);
-  const date = new Date(y, m - 1, d);
-  return date.toLocaleDateString(undefined, {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
-
 export default function BurnupChart({
   sprints,
   entries,
@@ -101,8 +90,8 @@ export default function BurnupChart({
 
   const hasData = chartData.length > 0;
 
-  const fromDate = formatChartDate(dateFrom);
-  const toDate = formatChartDate(dateTo);
+  const fromDate = formatDate(dateFrom);
+  const toDate = formatDate(dateTo);
   const hasDateRange = fromDate || toDate;
 
   if (!hasData) {

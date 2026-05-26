@@ -310,7 +310,6 @@
 /* ─── Shared Input Styles ───────────────────────────────────────────────────── */
 
 .input-sprint,
-.input-type,
 .input-value {
   font-family: var(--sans);
   font-size: 13px;
@@ -330,9 +329,6 @@
 
 .input-sprint {
   min-width: 140px;
-}
-
-.input-sprint {
   cursor: pointer;
 }
 
@@ -814,16 +810,6 @@
   color: var(--text-dim);
   margin: 4px 0 0;
   text-align: center;
-}
-
-/* ─── Section Title ─────────────────────────────────────────────────────────── */
-
-.section-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text-h);
-  margin: 0 0 10px;
-  letter-spacing: -0.1px;
 }
 
 /* ─── Accordion ────────────────────────────────────────────────────────────── */
@@ -1386,14 +1372,6 @@
   svg { flex-shrink: 0; }
 }
 
-.btn-icon-green {
-  &:hover {
-    background: var(--completed-bg);
-    border-color: var(--completed-border);
-    color: var(--completed);
-  }
-}
-
 .btn-icon-danger {
   &:hover {
     background: var(--danger-bg);
@@ -1556,7 +1534,6 @@
   }
 
   .chart-card { padding: 12px 8px 8px; }
-  .table-card { padding: 14px 12px; }
 
   .data-table .col-sprint,
   .data-table .col-type { width: auto; }

@@ -373,6 +373,7 @@ export default function App() {
             </button>
           )}
         </div>
+      <div className='meta-badges-group'>
         {editingSprint ? (
           <input
             ref={sprintEditRef}
@@ -426,6 +427,7 @@ export default function App() {
             <PencilIcon className='sprint-badge-icon' />
           </button>
         )}
+      </div>
       </div>
 
       {v1Error && (

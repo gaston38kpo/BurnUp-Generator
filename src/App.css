@@ -76,6 +76,7 @@
 .header-row-meta {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
   margin-top: 10px;
   flex-wrap: wrap;
@@ -85,6 +86,12 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
+}
+
+.meta-badges-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .date-display {

@@ -333,7 +333,7 @@ export default function App() {
               onClick={() => setEditingDateFrom(true)}
               title='Click to edit start date'
             >
-              {formatDate(state.present.dateFrom) || "sin fecha inicio"}
+              {formatDate(state.present.dateFrom) || "No start date"}
             </button>
           )}
           <span className='date-arrow'>→</span>
@@ -359,7 +359,7 @@ export default function App() {
               onClick={() => setEditingDateTo(true)}
               title='Click to edit end date'
             >
-              {formatDate(state.present.dateTo) || "sin fecha fin"}
+              {formatDate(state.present.dateTo) || "No end date"}
             </button>
           )}
         </div>

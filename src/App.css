@@ -352,7 +352,7 @@
 
 .chart-controls {
   position: absolute;
-  top: -15px;
+  top: -18px;
   right: -11px;
   z-index: 10;
   display: flex;
@@ -642,6 +642,15 @@
   color: var(--text-dim);
   font-size: 14px;
   margin: 0;
+}
+
+/* Date range subtitle (visible in chart screenshots) */
+.chart-date-range {
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 12px;
+  margin: 4px 0 0;
+  letter-spacing: 0.02em;
 }
 
 /* Custom legend */

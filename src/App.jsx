@@ -454,6 +454,9 @@ export default function App() {
         chartConfig={state.present.chartConfig}
         onChartConfigChange={handleChartConfigChange}
         chartRef={chartRef}
+        dateFrom={state.present.dateFrom}
+        dateTo={state.present.dateTo}
+        title={state.present.title}
       />
             </section>
 

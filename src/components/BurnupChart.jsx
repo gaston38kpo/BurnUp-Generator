@@ -70,12 +70,27 @@ function CustomTooltip({ active, payload, label }) {
     );
 }
 
+/** Format an ISO date string as "25 May 2026" (locale-aware short form). */
+function formatChartDate(iso) {
+  if (!iso) return "";
+  const [y, m, d] = iso.split("-").map(Number);
+  const date = new Date(y, m - 1, d);
+  return date.toLocaleDateString(undefined, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
 export default function BurnupChart({
   sprints,
   entries,
   chartConfig,
   onChartConfigChange,
   chartRef,
+  dateFrom,
+  dateTo,
+  title,
 }) {
     const { data: chartData } = useMemo(
         () => computeChartData(sprints, entries),
@@ -84,9 +99,13 @@ export default function BurnupChart({
 
     const idealColor = chartConfig.idealColor || "var(--ideal)";
 
-    const hasData = chartData.length > 0;
+  const hasData = chartData.length > 0;
 
-    if (!hasData) {
+  const fromDate = formatChartDate(dateFrom);
+  const toDate = formatChartDate(dateTo);
+  const hasDateRange = fromDate || toDate;
+
+  if (!hasData) {
         return (
             <div className='burnup-chart-container'>
                 <div className='chart-empty'>
@@ -137,15 +156,20 @@ export default function BurnupChart({
             Add sprints to see the burnup chart
           </p>
         </div>
-        <div className='chart-controls'>
-          <ChartSettings
-            chartConfig={chartConfig}
-            onChartConfigChange={onChartConfigChange}
-          />
-          <ChartCopyButton chartRef={chartRef} />
-        </div>
+      <div className='chart-controls'>
+        <ChartSettings
+          chartConfig={chartConfig}
+          onChartConfigChange={onChartConfigChange}
+        />
+        <ChartCopyButton chartRef={chartRef} />
       </div>
-    );
+      {hasDateRange && (
+        <p className='chart-date-range'>
+          {fromDate}{fromDate && toDate ? ' → ' : ''}{toDate}
+        </p>
+      )}
+    </div>
+  );
   }
 
   return (
@@ -157,6 +181,11 @@ export default function BurnupChart({
         />
         <ChartCopyButton chartRef={chartRef} />
       </div>
+      {hasDateRange && (
+        <p className='chart-date-range'>
+          {fromDate}{fromDate && toDate ? ' → ' : ''}{toDate}
+        </p>
+      )}
       <ResponsiveContainer width='100%' height={400}>
                 <ComposedChart
                     data={chartData}

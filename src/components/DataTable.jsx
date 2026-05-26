@@ -17,13 +17,14 @@
 
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react'
 import { PlusIcon, CloseIcon, EmptyTableIcon } from '../assets/icons'
+import { computeCumulatives } from '../lib/chartData'
 
 /**
  * EntryValueInput — local-state wrapper for existing entry value inputs.
  * Only propagates the value upstream on blur, not on every keystroke.
  * This prevents URL regeneration and history push while typing.
  */
-function EntryValueInput({ value, index, onEntryChange }) {
+function EntryValueInput({ value, entryId, onEntryChange }) {
   const [local, setLocal] = useState(value)
 
   // Sync from external value (e.g. after undo/redo)
@@ -33,9 +34,9 @@ function EntryValueInput({ value, index, onEntryChange }) {
 
   const commit = useCallback(() => {
     if (local !== value) {
-      onEntryChange(index, 'valor', local === '' ? '' : Number(local))
+      onEntryChange(entryId, 'valor', local === '' ? '' : Number(local))
     }
-  }, [local, value, index, onEntryChange])
+  }, [local, value, entryId, onEntryChange])
 
   return (
     <input
@@ -85,48 +86,19 @@ export default function DataTable({
   const displayEntries = useMemo(() => {
     const sprintIndexMap = new Map(sprints.map((s, i) => [s.id, i]))
     return entries
-      .map((entry, index) => ({ entry, index }))
+      .slice()
       .sort((a, b) => {
-        const ai = sprintIndexMap.get(a.entry.sprintId) ?? -1
-        const bi = sprintIndexMap.get(b.entry.sprintId) ?? -1
+        const ai = sprintIndexMap.get(a.sprintId) ?? -1
+        const bi = sprintIndexMap.get(b.sprintId) ?? -1
         if (ai !== bi) return bi - ai
-        return a.entry.tipo === 'Scope' ? -1 : 1
+        return a.tipo === 'Scope' ? -1 : 1
       })
   }, [entries, sprints])
 
-  const cumulatives = useMemo(() => {
-    const result = new Map()
-    let scopeRun = 0
-    let completedRun = 0
-    for (const s of sprints) {
-      const scopeEntry = entries.find(
-        (e) => e.sprintId === s.id && e.tipo === 'Scope'
-      )
-      if (scopeEntry) {
-        scopeRun =
-          scopeEntry.mode === 'absolute'
-            ? Number(scopeEntry.valor) || 0
-            : scopeRun + (Number(scopeEntry.valor) || 0)
-      }
-      const completedEntry = entries.find(
-        (e) => e.sprintId === s.id && e.tipo === 'Completed'
-      )
-      if (completedEntry) {
-        completedRun =
-          completedEntry.mode === 'absolute'
-            ? Number(completedEntry.valor) || 0
-            : completedRun + (Number(completedEntry.valor) || 0)
-      }
-      for (let i = 0; i < entries.length; i++) {
-        const e = entries[i]
-        if (e.sprintId === s.id) {
-          const acc = e.tipo === 'Scope' ? scopeRun : completedRun
-          result.set(i, acc)
-        }
-      }
-    }
-    return result
-  }, [entries, sprints])
+  const { sprintMap } = useMemo(
+    () => computeCumulatives(sprints, entries),
+    [sprints, entries]
+  )
 
   const isScope = (tipo) => tipo === 'Scope'
   const hasSprints = sprints.length > 0
@@ -162,10 +134,10 @@ export default function DataTable({
   }, [sprints, tplTipo, usedSprints, availableSprintsForTipo, tplSprintId])
 
   const wouldToggleDuplicate = useCallback(
-    (entryIndex, entryTipo, entrySprintId) => {
+    (entryId, entryTipo, entrySprintId) => {
       const switchedTipo = entryTipo === 'Scope' ? 'Completed' : 'Scope'
       return entries.some(
-        (e, i) => i !== entryIndex && e.tipo === switchedTipo && e.sprintId === entrySprintId
+        (e) => e.id !== entryId && e.tipo === switchedTipo && e.sprintId === entrySprintId
       )
     },
     [entries]
@@ -297,29 +269,29 @@ export default function DataTable({
               </tr>
             </thead>
             <tbody>
-              {displayEntries.map(({ entry, index }) => {
+              {displayEntries.map((entry) => {
                 const scoped = isScope(entry.tipo)
                 const typeClass = scoped ? 'row-scope' : 'row-completed'
-                const cumVal = cumulatives.get(index) ?? 0
+                const cumVal = sprintMap.get(entry.sprintId)?.[entry.tipo.toLowerCase()] ?? 0
                 const sprintName =
                   sprints.find((s) => s.id === entry.sprintId)?.name ||
                   'Unknown'
                 const switchedTipo = scoped ? 'Completed' : 'Scope'
                 const isToggleDisabled = wouldToggleDuplicate(
-                  index,
+                  entry.id,
                   entry.tipo,
                   entry.sprintId
                 )
                 const entryMode = entry.mode || 'relative'
 
                 return (
-                  <tr key={index} className={typeClass}>
+                  <tr key={entry.id} className={typeClass}>
                     <td className="col-sprint">
                       <select
                         className="input-sprint"
                         value={entry.sprintId}
                         onChange={(e) =>
-                          onEntryChange(index, 'sprintId', e.target.value)
+                          onEntryChange(entry.id, 'sprintId', e.target.value)
                         }
                         aria-label="Entry sprint"
                       >
@@ -343,7 +315,7 @@ export default function DataTable({
                         onClick={() => {
                           if (!isToggleDisabled) {
                             onEntryChange(
-                              index,
+                              entry.id,
                               'tipo',
                               scoped ? 'Completed' : 'Scope'
                             )
@@ -368,7 +340,7 @@ export default function DataTable({
                             type="button"
                             className={`mode-btn ${entryMode === 'relative' ? 'mode-btn-active' : ''} ${scoped ? 'mode-btn-scope' : 'mode-btn-completed'}`}
                             onClick={() =>
-                              onEntryChange(index, 'mode', 'relative')
+                              onEntryChange(entry.id, 'mode', 'relative')
                             }
                             title="Relative: value is a delta"
                           >
@@ -378,7 +350,7 @@ export default function DataTable({
                             type="button"
                             className={`mode-btn ${entryMode === 'absolute' ? 'mode-btn-active' : ''} ${scoped ? 'mode-btn-scope' : 'mode-btn-completed'}`}
                             onClick={() =>
-                              onEntryChange(index, 'mode', 'absolute')
+                              onEntryChange(entry.id, 'mode', 'absolute')
                             }
                             title="Absolute: value is the final total"
                           >
@@ -387,7 +359,7 @@ export default function DataTable({
                         </div>
               <EntryValueInput
                 value={entry.valor}
-                index={index}
+                entryId={entry.id}
                 onEntryChange={onEntryChange}
               />
                       </div>
@@ -402,7 +374,7 @@ export default function DataTable({
                     <td className="col-action">
                       <button
                         className="btn-delete"
-                        onClick={() => onEntryDelete(index)}
+                        onClick={() => onEntryDelete(entry.id)}
                         title="Delete entry"
                         aria-label="Delete entry"
                       >

@@ -1,21 +1,18 @@
 /**
- * ShareFooter.jsx — URL sharing, chart image export, and reset
+ * ShareFooter.jsx — URL sharing and reset
  *
  * Compact footer with:
  * - Read-only URL display + Copy Link
- * - Copy Image — chart exported as-is (no theme forcing)
  * - Clear All (reset to empty state)
  * - Toast feedback on copy actions
  */
 
 import { useState, useCallback } from 'react'
-import { toPng } from 'html-to-image'
-import { CheckSquareIcon, ImageIcon, TrashIcon } from '../assets/icons'
+import { CheckSquareIcon, TrashIcon } from '../assets/icons'
 
-export default function ShareFooter({ chartRef, onClear }) {
+export default function ShareFooter({ onClear }) {
   const [toast, setToast] = useState('')
   const [confirmClear, setConfirmClear] = useState(false)
-  const [exporting, setExporting] = useState(false)
 
   const currentUrl = typeof window !== 'undefined' ? window.location.href : ''
 
@@ -38,50 +35,6 @@ export default function ShareFooter({ chartRef, onClear }) {
     }
   }, [currentUrl, showToast])
 
-  const handleCopyImage = useCallback(async () => {
-    if (!chartRef?.current) {
-      showToast('No chart to export')
-      return
-    }
-    if (exporting) return
-
-    setExporting(true)
-
-    // 1. Hide the gear button
-    const gearBtn = chartRef.current.querySelector('.chart-settings-btn')
-    const gearPopover = chartRef.current.querySelector('.chart-settings-popover')
-    if (gearBtn) gearBtn.style.display = 'none'
-    if (gearPopover) gearPopover.style.display = 'none'
-
-    // 2. Wait for paint
-    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))
-
-    try {
-      // Capture chart as-is with transparent background
-      const dataUrl = await toPng(chartRef.current, {
-        backgroundColor: null,
-        pixelRatio: 2,
-      })
-
-      const response = await fetch(dataUrl)
-      const blob = await response.blob()
-
-      await navigator.clipboard.write([
-        new ClipboardItem({ 'image/png': blob }),
-      ])
-
-      showToast('Chart copied!')
-    } catch {
-      showToast('Image copy not supported')
-    } finally {
-      // 3. Restore gear button
-      if (gearBtn) gearBtn.style.display = ''
-      if (gearPopover) gearPopover.style.display = ''
-
-      setExporting(false)
-    }
-  }, [chartRef, showToast, exporting])
-
   return (
     <footer className="share-footer">
       <div className="share-row">
@@ -93,19 +46,10 @@ export default function ShareFooter({ chartRef, onClear }) {
           onClick={(e) => e.target.select()}
           aria-label="Shareable URL"
         />
-      <button className="btn-icon" onClick={handleCopyUrl} title="Copy shareable link">
-        <CheckSquareIcon />
-        <span>Copy Link</span>
-      </button>
-      <button
-        className="btn-icon"
-        onClick={handleCopyImage}
-        disabled={exporting}
-        title="Copy chart as image"
-      >
-        <ImageIcon />
-        <span>Copy Image</span>
-      </button>
+        <button className="btn-icon" onClick={handleCopyUrl} title="Copy shareable link">
+          <CheckSquareIcon />
+          <span>Copy Link</span>
+        </button>
         <div className="clear-wrapper">
           <button className="btn-icon btn-icon-danger" onClick={() => setConfirmClear(true)} title="Clear all data">
         <TrashIcon />

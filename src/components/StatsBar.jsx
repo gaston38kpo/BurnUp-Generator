@@ -11,55 +11,22 @@
  */
 
 import { useMemo } from 'react'
-
-function computeStats(entries, sprints) {
-  const sprintIndexMap = new Map(sprints.map((s, i) => [s.id, i]))
-
-  const entryBySprintTipo = new Map()
-  for (const e of entries) {
-    entryBySprintTipo.set(e.sprintId + '|' + e.tipo, {
-      valor: Number(e.valor) || 0,
-      mode: e.mode || 'relative',
-    })
-  }
-
-  let scopeAcc = 0
-  let completedAcc = 0
-  for (const s of sprints) {
-    const scopeEntry = entryBySprintTipo.get(s.id + '|Scope')
-    const completedEntry = entryBySprintTipo.get(s.id + '|Completed')
-    if (scopeEntry) {
-      scopeAcc =
-        scopeEntry.mode === 'absolute'
-          ? scopeEntry.valor
-          : scopeAcc + scopeEntry.valor
-    }
-    if (completedEntry) {
-      completedAcc =
-        completedEntry.mode === 'absolute'
-          ? completedEntry.valor
-          : completedAcc + completedEntry.valor
-    }
-  }
-
-  const remaining = Math.max(0, scopeAcc - completedAcc)
-  const pct =
-    scopeAcc > 0
-      ? Math.min(100, Math.round((completedAcc / scopeAcc) * 100))
-      : 0
-
-  return { totalScope: scopeAcc, totalCompleted: completedAcc, remaining, pct }
-}
+import { computeCumulatives } from '../lib/chartData'
 
 export default function StatsBar({ entries, sprints }) {
   const stats = useMemo(() => {
-    const { totalScope, totalCompleted, remaining, pct } = computeStats(
-      entries,
-      sprints || []
-    )
-    const onTrack = totalCompleted >= totalScope * (pct / 100)
+    const { sprintMap } = computeCumulatives(sprints || [], entries)
+    const lastSprint = sprints[sprints.length - 1]
+    const lastValues = lastSprint ? sprintMap.get(lastSprint.id) : { scope: 0, completed: 0 }
+    const totalScope = lastValues?.scope ?? 0
+    const totalCompleted = lastValues?.completed ?? 0
+    const remaining = Math.max(0, totalScope - totalCompleted)
+    const pct =
+      totalScope > 0
+        ? Math.min(100, Math.round((totalCompleted / totalScope) * 100))
+        : 0
 
-    return { totalScope, totalCompleted, remaining, pct, onTrack }
+    return { totalScope, totalCompleted, remaining, pct }
   }, [entries, sprints])
 
   const hasScope = stats.totalScope > 0

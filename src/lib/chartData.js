@@ -8,9 +8,7 @@
  * Subsequent data points get null, which breaks the line in Recharts.
  */
 
-export function computeChartData(sprints, entries) {
-  if (!sprints.length) return { data: [], maxScope: 0 }
-
+export function computeCumulatives(sprints, entries) {
   const entryBySprintTipo = new Map()
   for (const e of entries) {
     entryBySprintTipo.set(e.sprintId + '|' + e.tipo, {
@@ -19,18 +17,10 @@ export function computeChartData(sprints, entries) {
     })
   }
 
-  // Find the last sprint index that has a Completed entry
-  let lastCompletedIdx = -1
-  for (let i = sprints.length - 1; i >= 0; i--) {
-    if (entryBySprintTipo.has(sprints[i].id + '|Completed')) {
-      lastCompletedIdx = i
-      break
-    }
-  }
-
+  const sprintMap = new Map()
   let scopeAcc = 0
   let completedAcc = 0
-  const data = sprints.map((s, i) => {
+  for (const s of sprints) {
     const scopeEntry = entryBySprintTipo.get(s.id + '|Scope')
     const completedEntry = entryBySprintTipo.get(s.id + '|Completed')
 
@@ -48,15 +38,37 @@ export function computeChartData(sprints, entries) {
           : completedAcc + completedEntry.valor
     }
 
-    return {
-      sprint: s.name,
-      scope: scopeAcc,
-      // Only show completed up to the last sprint with a Completed entry
-      completed: i <= lastCompletedIdx ? completedAcc : null,
-    }
-  })
+    sprintMap.set(s.id, { scope: scopeAcc, completed: completedAcc })
+  }
 
-  const maxScope = scopeAcc
+  return { sprintMap, maxScope: scopeAcc }
+}
+
+export function computeChartData(sprints, entries) {
+  if (!sprints.length) return { data: [], maxScope: 0 }
+
+  const { sprintMap, maxScope } = computeCumulatives(sprints, entries)
+
+  // Find the last sprint index that has a Completed entry
+  const entryBySprintTipo = new Map()
+  for (const e of entries) {
+    entryBySprintTipo.set(e.sprintId + '|' + e.tipo, true)
+  }
+
+  let lastCompletedIdx = -1
+  for (let i = sprints.length - 1; i >= 0; i--) {
+    if (entryBySprintTipo.has(sprints[i].id + '|Completed')) {
+      lastCompletedIdx = i
+      break
+    }
+  }
+
+  const data = sprints.map((s, i) => ({
+    sprint: s.name,
+    scope: sprintMap.get(s.id)?.scope ?? 0,
+    completed: i <= lastCompletedIdx ? (sprintMap.get(s.id)?.completed ?? 0) : null,
+  }))
+
   for (let i = 0; i < data.length; i++) {
     const ideal = data.length > 1 ? (maxScope * i) / (data.length - 1) : 0
     data[i].ideal = Math.round(ideal * 100) / 100

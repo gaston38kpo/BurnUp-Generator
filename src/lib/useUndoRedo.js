@@ -1,12 +1,11 @@
 import { useReducer, useCallback } from 'react';
 
 const SPRINT_0_ID = 's0';
-const SPRINT_0_NAME = 'Sprint 0';
 
-export function buildSprints(count) {
-  const sprints = [{ id: SPRINT_0_ID, name: SPRINT_0_NAME }];
+export function buildSprints(count, offset = 0) {
+  const sprints = [{ id: SPRINT_0_ID, name: 'Sprint ' + offset }];
   for (let i = 1; i <= count; i++) {
-    sprints.push({ id: 's' + i, name: 'Sprint ' + i });
+    sprints.push({ id: 's' + i, name: 'Sprint ' + (offset + i) });
   }
   return sprints;
 }
@@ -16,7 +15,9 @@ const DEFAULT_SPRINT_COUNT = 1;
 export const DEFAULT_STATE = {
   title: '',
   sprintCount: DEFAULT_SPRINT_COUNT,
-  sprints: buildSprints(DEFAULT_SPRINT_COUNT),
+  sprintOffset: 0,
+  nextEntryId: 1,
+  sprints: buildSprints(DEFAULT_SPRINT_COUNT, 0),
   entries: [],
   dateFrom: '',
   dateTo: '',
@@ -50,18 +51,82 @@ function undoRedoReducer(state, action) {
     case 'SET_TITLE':
     case 'SET_DATE_FROM':
     case 'SET_DATE_TO':
-    case 'SET_ENTRIES':
     case 'SET_CHART_CONFIG': {
       const keyMap = {
         SET_TITLE: 'title',
         SET_DATE_FROM: 'dateFrom',
         SET_DATE_TO: 'dateTo',
-        SET_ENTRIES: 'entries',
         SET_CHART_CONFIG: 'chartConfig',
       };
       const key = keyMap[action.type];
       if (present[key] === action.payload) return state;
       const newPresent = { ...present, [key]: action.payload };
+      const newPast = [...past, present].slice(-50);
+      return {
+        past: newPast,
+        present: newPresent,
+        future: [],
+      };
+    }
+    case 'ADD_ENTRY': {
+      const { sprintId, tipo, valor, mode } = action.payload;
+      const newEntry = {
+        id: 'e' + present.nextEntryId,
+        sprintId,
+        tipo,
+        valor: Number(valor) || 0,
+        mode: mode || 'relative',
+      };
+      const newPresent = {
+        ...present,
+        nextEntryId: present.nextEntryId + 1,
+        entries: [...present.entries, newEntry],
+      };
+      const newPast = [...past, present].slice(-50);
+      return {
+        past: newPast,
+        present: newPresent,
+        future: [],
+      };
+    }
+    case 'UPDATE_ENTRY': {
+      const { id, field, value } = action.payload;
+      const entryIndex = present.entries.findIndex((e) => e.id === id);
+      if (entryIndex === -1) return state;
+      if (present.entries[entryIndex][field] === value) return state;
+      const newEntries = present.entries.slice();
+      newEntries[entryIndex] = { ...newEntries[entryIndex], [field]: value };
+      const newPresent = { ...present, entries: newEntries };
+      const newPast = [...past, present].slice(-50);
+      return {
+        past: newPast,
+        present: newPresent,
+        future: [],
+      };
+    }
+    case 'DELETE_ENTRY': {
+      const id = action.payload;
+      const entryIndex = present.entries.findIndex((e) => e.id === id);
+      if (entryIndex === -1) return state;
+      const newPresent = {
+        ...present,
+        entries: present.entries.filter((e) => e.id !== id),
+      };
+      const newPast = [...past, present].slice(-50);
+      return {
+        past: newPast,
+        present: newPresent,
+        future: [],
+      };
+    }
+    case 'SET_SPRINT_OFFSET': {
+      const offset = Math.max(0, Number(action.payload) || 0);
+      if (present.sprintOffset === offset) return state;
+      const newPresent = {
+        ...present,
+        sprintOffset: offset,
+        sprints: buildSprints(present.sprintCount, offset),
+      };
       const newPast = [...past, present].slice(-50);
       return {
         past: newPast,
@@ -78,7 +143,7 @@ function undoRedoReducer(state, action) {
       } else if (count > currentCount) {
         const added = [];
         for (let i = currentCount + 1; i <= count; i++) {
-          added.push({ id: 's' + i, name: 'Sprint ' + i });
+          added.push({ id: 's' + i, name: 'Sprint ' + (present.sprintOffset + i) });
         }
         newPresent = {
           ...present,

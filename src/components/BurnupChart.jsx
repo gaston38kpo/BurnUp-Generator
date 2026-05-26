@@ -23,6 +23,7 @@ import {
 } from "recharts";
 import { computeChartData } from "../lib/chartData";
 import ChartSettings from "./ChartSettings";
+import ChartCopyButton from "./ChartCopyButton";
 
 /**
  * Custom legend with colored dots matching line colors.
@@ -70,10 +71,11 @@ function CustomTooltip({ active, payload, label }) {
 }
 
 export default function BurnupChart({
-    sprints,
-    entries,
-    chartConfig,
-    onChartConfigChange,
+  sprints,
+  entries,
+  chartConfig,
+  onChartConfigChange,
+  chartRef,
 }) {
     const { data: chartData } = useMemo(
         () => computeChartData(sprints, entries),
@@ -131,25 +133,31 @@ export default function BurnupChart({
                             opacity='0.5'
                         />
                     </svg>
-                    <p className='chart-empty-text'>
-                        Add sprints to see the burnup chart
-                    </p>
-                </div>
-                <ChartSettings
-                    chartConfig={chartConfig}
-                    onChartConfigChange={onChartConfigChange}
-                />
-            </div>
-        );
-    }
+          <p className='chart-empty-text'>
+            Add sprints to see the burnup chart
+          </p>
+        </div>
+        <div className='chart-controls'>
+          <ChartSettings
+            chartConfig={chartConfig}
+            onChartConfigChange={onChartConfigChange}
+          />
+          <ChartCopyButton chartRef={chartRef} />
+        </div>
+      </div>
+    );
+  }
 
-    return (
-        <div className='burnup-chart-container'>
-            <ChartSettings
-                chartConfig={chartConfig}
-                onChartConfigChange={onChartConfigChange}
-            />
-            <ResponsiveContainer width='100%' height={400}>
+  return (
+    <div className='burnup-chart-container'>
+      <div className='chart-controls'>
+        <ChartSettings
+          chartConfig={chartConfig}
+          onChartConfigChange={onChartConfigChange}
+        />
+        <ChartCopyButton chartRef={chartRef} />
+      </div>
+      <ResponsiveContainer width='100%' height={400}>
                 <ComposedChart
                     data={chartData}
                     margin={{ top: 16, right: 24, left: 8, bottom: 16 }}

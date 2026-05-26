@@ -1,17 +1,17 @@
 /**
- * urlState.js — URL Compression & State Synchronization (v4)
+ * urlState.js — URL Compression & State Synchronization (v6)
  *
  * Pipeline:
  * WRITE: state → compact JSON → pako.deflate(raw) → Uint8Array → base64url → ?data=...
  * READ: ?data=... → base64url → Uint8Array → pako.inflate() → compact JSON → state
  *
- * v4 compact format:
- * [4, title|null, dateFrom|null, dateTo|null, sprintName0, sprintName1, ..., null, sprintIndex, valor, tipo, mode, ...]
- * Prefix 4 = version. title, dateFrom, dateTo are strings or null.
- * Entries use sprint array index (0-based).
- * tipo: 0 = Scope, 1 = Completed
- * mode: 0 = relative, 1 = absolute
+ * v6 compact format:
+ * [6, title|null, dateFrom|null, dateTo|null, sprintOffset|null, sprintName0, sprintName1, ..., null, sprintIndex, valor, tipo, mode, ...]
+ * Prefix 6 = version. sprintOffset at index 4 (null = 0).
+ * Entry IDs are NOT stored in URL — regenerated on decode via nextEntryId counter.
  *
+ * v5 backward compat: [5, title|null, dateFrom|null, dateTo|null, sprintName0, ...]
+ * v4 backward compat: [4, title|null, dateFrom|null, dateTo|null, sprintName0, ...]
  * v3 backward compat: [3, title|null, sprintName0, ...]
  * v2 backward compat: entries are triplets (sprintIndex, valor, tipo), mode defaults to 'relative'
  *
@@ -51,7 +51,7 @@ function base64UrlToUint8(str) {
 // ─── State ↔ Compact JSON (v2) ──────────────────────────────────────────────
 
 function stateToCompact(state) {
-  const compact = [5, state.title || null, state.dateFrom || null, state.dateTo || null]
+  const compact = [6, state.title || null, state.dateFrom || null, state.dateTo || null, state.sprintOffset || null]
   for (const s of state.sprints) {
     compact.push(s.name)
   }
@@ -92,8 +92,9 @@ function compactToState(compact) {
   if (version === 1 || (typeof version === 'string')) {
     return { error: 'v1_unsupported' }
   }
-  if (version < 2 || version > 5) return null
+  if (version < 2 || version > 6) return null
 
+  // v6: [6, title, dateFrom, dateTo, sprintOffset, sprintNames..., null, entries..., null, chartConfig...]
   // v5: [5, title, dateFrom, dateTo, sprintNames..., null, entries..., null, scopeType, completedType]
   // v4: [4, title, dateFrom, dateTo, sprintNames..., null, entries...]
   // v3: [3, title, sprintNames..., null, entries...]
@@ -101,13 +102,19 @@ function compactToState(compact) {
   let title = ''
   let dateFrom = ''
   let dateTo = ''
+  let sprintOffset = 0
   let sprintsStart
 
   if (version >= 4) {
     title = compact.length > 1 && typeof compact[1] === 'string' ? compact[1] : ''
     dateFrom = compact.length > 2 && typeof compact[2] === 'string' ? compact[2] : ''
     dateTo = compact.length > 3 && typeof compact[3] === 'string' ? compact[3] : ''
-    sprintsStart = 4
+    if (version >= 6) {
+      sprintOffset = compact[4] != null ? Number(compact[4]) : 0
+      sprintsStart = 5
+    } else {
+      sprintsStart = 4
+    }
   } else {
     title = compact.length > 1 && typeof compact[1] === 'string' ? compact[1] : ''
     sprintsStart = 2
@@ -123,6 +130,7 @@ function compactToState(compact) {
 
   const stride = version === 2 ? 3 : 4
   const entries = []
+  let nextEntryId = 1
   // For v5+, stop at the next null sentinel (chartConfig separator)
   while (i + stride - 1 < compact.length && compact[i] !== null) {
     const sprintIndex = compact[i]
@@ -131,7 +139,7 @@ function compactToState(compact) {
     const mode =
       stride === 4 && compact[i + 3] === 1 ? 'absolute' : 'relative'
     if (sprintIndex >= 0 && sprintIndex < sprints.length) {
-      entries.push({ sprintId: sprints[sprintIndex].id, tipo, valor, mode })
+      entries.push({ id: 'e' + nextEntryId++, sprintId: sprints[sprintIndex].id, tipo, valor, mode })
     }
     i += stride
   }
@@ -159,7 +167,7 @@ function compactToState(compact) {
     }
   }
 
-  const result = { title, sprints, entries, chartConfig }
+  const result = { title, sprints, entries, chartConfig, sprintOffset, nextEntryId }
   if (version >= 4) {
     result.dateFrom = dateFrom
     result.dateTo = dateTo

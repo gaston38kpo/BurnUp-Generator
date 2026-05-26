@@ -72,6 +72,8 @@ function loadInitialState() {
       state: {
         title: decoded.title || "",
         sprintCount,
+        sprintOffset: decoded.sprintOffset || 0,
+        nextEntryId: decoded.nextEntryId || 1,
         sprints: decoded.sprints,
         entries: decoded.entries,
         dateFrom: decoded.dateFrom || "",
@@ -90,11 +92,6 @@ export default function App() {
     const [v1Error, setV1Error] = useState(initial.v1Error);
 
   const chartRef = useRef(null);
-  const presentRef = useRef(state.present);
-
-  useEffect(() => {
-    presentRef.current = state.present;
-  });
 
     // ─── URL synchronization (debounced) ────────────────────────────────────
     const urlSyncTimer = useRef(null);
@@ -173,6 +170,61 @@ export default function App() {
         [commitSprintEdit, cancelSprintEdit],
     );
 
+  // ─── Sprint draft sync ─────────────────────────────────────────────────
+  useEffect(() => {
+    if (!editingSprint) {
+      setSprintDraft(String(state.present.sprintCount));
+    }
+  }, [state.present.sprintCount, editingSprint]);
+
+  // ─── Offset badge inline-edit ──────────────────────────────────────────
+  const [editingOffset, setEditingOffset] = useState(false);
+  const [offsetDraft, setOffsetDraft] = useState(String(state.present.sprintOffset));
+  const offsetEditRef = useRef(null);
+
+  useEffect(() => {
+    if (editingOffset && offsetEditRef.current) {
+      offsetEditRef.current.focus();
+      offsetEditRef.current.select();
+    }
+  }, [editingOffset]);
+
+  useEffect(() => {
+    if (!editingOffset) {
+      setOffsetDraft(String(state.present.sprintOffset));
+    }
+  }, [state.present.sprintOffset, editingOffset]);
+
+  const openOffsetEdit = useCallback(() => {
+    setOffsetDraft(String(state.present.sprintOffset));
+    setEditingOffset(true);
+  }, [state.present.sprintOffset]);
+
+  const commitOffsetEdit = useCallback(() => {
+    const val = Math.max(0, parseInt(offsetDraft, 10) || 0);
+    setOffsetDraft(String(val));
+    dispatch({ type: 'SET_SPRINT_OFFSET', payload: val });
+    setEditingOffset(false);
+  }, [offsetDraft, dispatch]);
+
+  const cancelOffsetEdit = useCallback(() => {
+    setOffsetDraft(String(state.present.sprintOffset));
+    setEditingOffset(false);
+  }, [state.present.sprintOffset]);
+
+  const handleOffsetKeyDown = useCallback(
+    (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        commitOffsetEdit();
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        cancelOffsetEdit();
+      }
+    },
+    [commitOffsetEdit, cancelOffsetEdit],
+  );
+
     // ─── Date inline-edit ──────────────────────────────────────────────────
     const [editingDateFrom, setEditingDateFrom] = useState(false);
     const [editingDateTo, setEditingDateTo] = useState(false);
@@ -195,32 +247,22 @@ export default function App() {
     const handleEntryAdd = useCallback((sprintId, tipo, valor, mode) => {
         if (!sprintId) return;
         dispatch({
-            type: 'SET_ENTRIES',
-            payload: [
-                ...presentRef.current.entries,
-                {
-                    sprintId,
-                    tipo,
-                    valor: Number(valor) || 0,
-                    mode: mode || "relative",
-                },
-            ],
+            type: 'ADD_ENTRY',
+            payload: { sprintId, tipo, valor, mode },
         });
     }, [dispatch]);
 
-    const handleEntryChange = useCallback((originalIndex, field, value) => {
+    const handleEntryChange = useCallback((id, field, value) => {
         dispatch({
-            type: 'SET_ENTRIES',
-            payload: presentRef.current.entries.map((entry, i) =>
-                i === originalIndex ? { ...entry, [field]: value } : entry
-            ),
+            type: 'UPDATE_ENTRY',
+            payload: { id, field, value },
         });
     }, [dispatch]);
 
-    const handleEntryDelete = useCallback((originalIndex) => {
+    const handleEntryDelete = useCallback((id) => {
         dispatch({
-            type: 'SET_ENTRIES',
-            payload: presentRef.current.entries.filter((_, i) => i !== originalIndex),
+            type: 'DELETE_ENTRY',
+            payload: id,
         });
     }, [dispatch]);
 
@@ -339,6 +381,32 @@ export default function App() {
           <PencilIcon className='sprint-badge-icon' />
                                 </button>
                             )}
+                            {editingOffset ? (
+                                <input
+                                    ref={offsetEditRef}
+                                    type='number'
+                                    className='offset-badge-input'
+                                    value={offsetDraft}
+                                    min={0}
+                                    step={1}
+                                    onChange={(e) =>
+                                        setOffsetDraft(e.target.value)
+                                    }
+                                    onBlur={commitOffsetEdit}
+                                    onKeyDown={handleOffsetKeyDown}
+                                    aria-label='Sprint offset'
+                                />
+                            ) : (
+                                <button
+                                    className='offset-badge'
+                                    onClick={openOffsetEdit}
+                                    title='Click to edit sprint offset'
+                                    aria-label={`Offset ${state.present.sprintOffset} — click to edit`}
+                                >
+                                    +{state.present.sprintOffset}
+          <PencilIcon className='sprint-badge-icon' />
+                                </button>
+                            )}
                         </div>
                     </div>
 
@@ -388,12 +456,13 @@ export default function App() {
 
             {/* ── Chart Zone ────────────────────────────────────────────────── */}
             <section className='card chart-card' ref={chartRef}>
-                <BurnupChart
-                    sprints={state.present.sprints}
-                    entries={state.present.entries}
-                    chartConfig={state.present.chartConfig}
-                    onChartConfigChange={handleChartConfigChange}
-                />
+      <BurnupChart
+        sprints={state.present.sprints}
+        entries={state.present.entries}
+        chartConfig={state.present.chartConfig}
+        onChartConfigChange={handleChartConfigChange}
+        chartRef={chartRef}
+      />
             </section>
 
             {/* ── Data Table (accordion) ──────────────────────────────────── */}
@@ -412,7 +481,7 @@ export default function App() {
             </Accordion>
 
             {/* ── Footer: Share ─────────────────────────────────────────────── */}
-            <ShareFooter chartRef={chartRef} onClear={handleClear} />
+            <ShareFooter onClear={handleClear} />
         </div>
     );
 }

@@ -8,7 +8,6 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "generate-og": "node scripts/generate-og-image.js",
     "lint": "eslint .",
     "deploy": "vite build && gh-pages -d dist"
   },
@@ -21,14 +20,14 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@vitejs/plugin-react": "^6.0.1",
-    "eslint": "^10.3.0",
+    "@vitejs/plugin-react": "^6.0.2",
+    "eslint": "^10.4.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "gh-pages": "^6.3.0",
     "globals": "^17.6.0",
     "sharp": "^0.34.5",
-    "vite": "^8.0.12",
+    "vite": "^8.0.14",
     "vite-plugin-svgr": "^5.2.0"
   }
 }

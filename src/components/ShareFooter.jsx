@@ -8,7 +8,7 @@
  */
 
 import { useState, useCallback } from 'react'
-import { CheckSquareIcon, TrashIcon } from '../assets/icons'
+import { CopySmIcon, DeleteAllIcon } from '../assets/icons'
 
 export default function ShareFooter({ onClear }) {
   const [toast, setToast] = useState('')
@@ -47,13 +47,11 @@ export default function ShareFooter({ onClear }) {
           aria-label="Shareable URL"
         />
         <button className="btn-icon" onClick={handleCopyUrl} title="Copy shareable link">
-          <CheckSquareIcon />
-          <span>Copy Link</span>
+          <CopySmIcon />
         </button>
         <div className="clear-wrapper">
           <button className="btn-icon btn-icon-danger" onClick={() => setConfirmClear(true)} title="Clear all data">
-        <TrashIcon />
-        <span>Clear</span>
+        <DeleteAllIcon />
           </button>
           {confirmClear && (
             <div className="confirm-dialog" onClick={(e) => e.stopPropagation()}>

@@ -32,3 +32,4 @@ lerna-lock.yaml
 Thumbs.db
 
 .atl
+/coverage

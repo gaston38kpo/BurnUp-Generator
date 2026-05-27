@@ -24,7 +24,7 @@ export const DEFAULT_STATE = {
   chartConfig: { scopeType: 'linear', completedType: 'linear', scopeFill: true, completedFill: true, scopeColor: '#75AADB', completedColor: '#FCBF49', idealColor: '' },
 };
 
-function undoRedoReducer(state, action) {
+export function undoRedoReducer(state, action) {
   const { past, present, future } = state;
 
   switch (action.type) {

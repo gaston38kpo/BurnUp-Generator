@@ -109,13 +109,25 @@ export default function ChartSettings({ chartConfig, onChartConfigChange }) {
             config={config}
             onChange={setDraftValue}
           />
-          <IdealConfig
-            colorKey="idealColor"
-            defaultColor="#FFFFFF"
-            config={config}
-            onChange={setDraftValue}
-          />
-          <div className="chart-settings-actions">
+           <IdealConfig
+             colorKey="idealColor"
+             defaultColor="#FFFFFF"
+             config={config}
+             onChange={setDraftValue}
+           />
+            <div className="chart-settings-section">
+              <span className="chart-settings-label">Trend Line</span>
+              <div className="chart-settings-row">
+                 <button
+                   className={`chart-settings-opt${config.showTrendLine ? ' chart-settings-opt-active' : ''}`}
+                   onClick={() => setDraftValue('showTrendLine', !config.showTrendLine)}
+                   title="Show a linear regression trend line based on completed work"
+                 >
+                   {config.showTrendLine ? 'Enabled' : 'Disabled'}
+                 </button>
+              </div>
+            </div>
+           <div className="chart-settings-actions">
             <button
               className="chart-settings-cancel"
               onClick={handleCancel}

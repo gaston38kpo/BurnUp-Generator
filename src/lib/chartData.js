@@ -69,9 +69,40 @@ export function computeChartData(sprints, entries) {
     completed: i <= lastCompletedIdx ? (sprintMap.get(s.id)?.completed ?? 0) : null,
   }))
 
+  // Linear Regression for Trend Line
+  const completedPoints = data
+    .map((d, i) => ({ x: i, y: d.completed }))
+    .filter(p => p.y !== null)
+
+  let trendValue = 0
+  if (completedPoints.length >= 2) {
+    const n = completedPoints.length
+    let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0
+
+    for (const p of completedPoints) {
+      sumX += p.x
+      sumY += p.y
+      sumXY += p.x * p.y
+      sumXX += p.x * p.x
+    }
+
+    const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX)
+    const intercept = (sumY - slope * sumX) / n
+
+    // We store the formula in the loop below
+    var regression = { slope, intercept }
+  }
+
   for (let i = 0; i < data.length; i++) {
     const ideal = data.length > 1 ? (maxScope * i) / (data.length - 1) : 0
     data[i].ideal = Math.round(ideal * 100) / 100
+    
+    if (typeof regression !== 'undefined') {
+      const val = regression.slope * i + regression.intercept
+      data[i].trendValue = Math.round(val * 100) / 100
+    } else {
+      data[i].trendValue = completedPoints.length > 0 ? completedPoints[0].y : 0
+    }
   }
 
   return { data, maxScope }

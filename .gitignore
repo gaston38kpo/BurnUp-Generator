@@ -30,3 +30,5 @@ lerna-lock.yaml
 
 # OS files
 Thumbs.db
+
+.atl

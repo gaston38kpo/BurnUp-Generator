@@ -302,18 +302,32 @@ export default function BurnupChart({
                         isAnimationActive={false}
                     />
 
-                    {/* Ideal line */}
-                    <Line
-                        type='linear'
-                        dataKey='ideal'
-                        name='Ideal'
-                        stroke={idealColor}
-                        strokeWidth={1}
-                        strokeDasharray='8 4'
-                        dot={false}
-                        activeDot={false}
-                    />
-                </ComposedChart>
+                     {/* Ideal line */}
+                     <Line
+                         type='linear'
+                         dataKey='ideal'
+                         name='Ideal'
+                         stroke={idealColor}
+                         strokeWidth={1}
+                         strokeDasharray='8 4'
+                         dot={false}
+                         activeDot={false}
+                     />
+
+                      {/* Trend Line */}
+                      {chartConfig.showTrendLine && (
+                          <Line
+                              type='linear'
+                              dataKey='trendValue'
+                              name='Trend Line'
+                              stroke='var(--completed)'
+                              strokeWidth={1}
+                              strokeDasharray='4 4'
+                              dot={false}
+                              activeDot={false}
+                          />
+                      )}
+                 </ComposedChart>
             </ResponsiveContainer>
         </div>
     );

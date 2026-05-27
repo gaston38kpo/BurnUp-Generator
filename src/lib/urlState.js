@@ -81,6 +81,7 @@ function stateToCompact(state) {
   compact.push(cc.scopeColor || '#75AADB')
   compact.push(cc.completedColor || '#FCBF49')
   compact.push(cc.idealColor || '#FFFFFF')
+  compact.push(cc.showTrendLine === true ? 1 : 0)
 
   return compact
 }
@@ -164,6 +165,9 @@ function compactToState(compact) {
     }
     if (i + 6 < compact.length && typeof compact[i + 6] === 'string') {
       chartConfig.idealColor = compact[i + 6]
+    }
+    if (i + 7 < compact.length) {
+      chartConfig.showTrendLine = compact[i + 7] === 1
     }
   }
 

@@ -1,14 +1,11 @@
-import { useEffect } from 'react';
+/**
+ * useKeyboardShortcuts.js — Re-export facade
+ *
+ * Hook logic moved to src/application/useKeyboardShortcuts.js.
+ * This file is kept as a re-export facade to maintain
+ * backward compatibility with existing imports.
+ *
+ * @deprecated Import directly from '../application/useKeyboardShortcuts.js'
+ */
 
-export default function useKeyboardShortcuts(undo, redo, canUndo, canRedo) {
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      const isUndo = (e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey;
-      const isRedo = (e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey));
-      if (isUndo && canUndo) { e.preventDefault(); undo(); }
-      else if (isRedo && canRedo) { e.preventDefault(); redo(); }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [undo, redo, canUndo, canRedo]);
-}
+export { default } from '../application/useKeyboardShortcuts.js';

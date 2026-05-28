@@ -1,10 +1,11 @@
-export function formatDate(iso) {
-  if (!iso) return "";
-  const [y, m, d] = iso.split("-").map(Number);
-  const date = new Date(y, m - 1, d);
-  return date.toLocaleDateString(undefined, {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
+/**
+ * formatDate.js — Re-export facade
+ *
+ * Domain logic moved to src/domain/formatDate.js.
+ * This file is kept as a re-export facade to maintain
+ * backward compatibility with existing imports.
+ *
+ * @deprecated Import directly from '../domain/formatDate.js'
+ */
+
+export * from '../domain/formatDate.js';

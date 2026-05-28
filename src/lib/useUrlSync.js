@@ -1,17 +1,11 @@
-import { useEffect, useRef } from 'react';
-import { encodeState, writeUrlToken } from './urlState';
+/**
+ * useUrlSync.js — Re-export facade
+ *
+ * Hook logic moved to src/application/useUrlSync.js.
+ * This file is kept as a re-export facade to maintain
+ * backward compatibility with existing imports.
+ *
+ * @deprecated Import directly from '../application/useUrlSync.js'
+ */
 
-export default function useUrlSync(state) {
-  const timerRef = useRef(null);
-
-  useEffect(() => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => {
-      const token = encodeState(state);
-      writeUrlToken(token);
-    }, 300);
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, [state]);
-}
+export { default } from '../application/useUrlSync.js';

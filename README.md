@@ -86,3 +86,13 @@ Esto construye el proyecto y envía la carpeta `dist/` a la rama `gh-pages`.
 - Recharts
 - pako (compresión de URL)
 - html-to-image (exportación de la gráfica)
+
+## Arquitectura
+
+El proyecto sigue **Arquitectura Hexagonal (Ports & Adapters)** con tres capas:
+
+- **`src/domain/`** — Lógica de negocio pura (cálculos burnup, reducer de estado, colores). Sin dependencias de React ni del framework.
+- **`src/application/`** — Hooks de React que orquestan la interacción entre el dominio y la UI.
+- **`src/adapters/`** — Adaptadores de infraestructura (`UrlStateAdapter`) y componentes de presentación (`components/`).
+
+Regla de dependencia: `domain/` no importa nada externo, `application/` importa de `domain/`, `adapters/` importa de ambas capas internas.

@@ -1,27 +1,10 @@
 /* eslint-disable react-hooks/refs -- false positives from useInlineEdit hook */
 /**
- * App.jsx — Main orchestrator for the Sprint-Based Burnup Chart Generator
+ * App.jsx — Thin orchestrator for the Burnup Chart Generator
  *
- * Architecture:
- * ┌─────────────────────────────────────────────┐
- * │ App (state owner)                           │
- * │ ├─ sprints[] (ordered sprint definitions)   │
- * │ ├─ entries[] (data table rows)              │
- * │                                             │
- * │ ├─ <Header /> (icon + title + sprint count) │
- * │ ├─ <BurnupChart /> (reads state)            │
- * │ ├─ <StatsBar /> (reads entries)             │
- * │ ├─ <DataTable /> (reads + mutates)          │
- * │ └─ <ShareFooter /> (reads URL + chart)      │
- * │                                             │
- * │ URL Sync: state → encode → replaceState     │
- * └─────────────────────────────────────────────┘
- *
- * Sprint model:
- * - Sprint 0 always exists (cannot be removed)
- * - Additional sprints (1..N) controlled by a numeric input
- * - Sprint count input sets N (minimum 1, meaning Sprint 1 exists)
- * - Badge shows N (additional sprints), not counting Sprint 0
+ * Wires domain state (burnupReducer) to UI components through React hooks.
+ * Header extracted to components/Header.jsx.
+ * Hooks from src/application/, pure logic from src/domain/.
  */
 
 import { useState, useRef, useCallback, useMemo } from "react";
@@ -30,18 +13,14 @@ import StatsBar from "./components/StatsBar";
 import DataTable from "./components/DataTable";
 import ShareFooter from "./components/ShareFooter";
 import Accordion from "./components/Accordion";
-import { BurnupLogo, PencilIcon } from "./assets/icons";
-import {
-    decodeState,
-    readUrlToken,
-} from "./lib/urlState";
+import Header from "./components/Header";
+import { cssVarOverrides } from "./domain/colors";
+import { computeChartData } from "./domain/chartData";
+import { decodeState, readUrlToken } from "./adapters/UrlStateAdapter";
 import useUndoRedo, { ACTION_TYPES, DEFAULT_STATE } from "./lib/useUndoRedo";
-import useInlineEdit from "./lib/useInlineEdit";
-import useUrlSync from "./lib/useUrlSync";
-import useKeyboardShortcuts from "./lib/useKeyboardShortcuts";
-import { cssVarOverrides } from "./lib/colors";
-import { formatDate } from "./lib/formatDate.js";
-import { computeChartData } from "./lib/chartData";
+import useInlineEdit from "./application/useInlineEdit";
+import useUrlSync from "./application/useUrlSync";
+import useKeyboardShortcuts from "./application/useKeyboardShortcuts";
 import "./App.css";
 
 /** Normalize legacy idealColor "#FFFFFF" to "" (now theme-aware) */
@@ -154,178 +133,34 @@ export default function App() {
     return (
         <div className='app-layout'>
             <style dangerouslySetInnerHTML={{ __html: cssVars }} />
-            {/* ── Header ─────────────────────────────────────────────────────── */}
-<header className='app-header'>
-      <div className='header-row-primary'>
-        <div className='header-identity'>
-          <BurnupLogo className='header-icon' />
-          <input
-            type='text'
-            className='title-input'
-            value={state.present.title}
-            onChange={(e) => dispatch({ type: ACTION_TYPES.SET_TITLE, payload: e.target.value })}
-            placeholder='Burnup'
-            aria-label='Chart title'
-          />
-        </div>
-        <div className='undo-redo-group'>
-          <button
-            className='undo-redo-btn'
-            onClick={undo}
-            disabled={!canUndo}
-            aria-label='Undo'
-            title='Undo (Ctrl+Z / Cmd+Z)'
-          >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M4 8L7 5M4 8L7 11M4 8H12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
-          <button
-            className='undo-redo-btn'
-            onClick={redo}
-            disabled={!canRedo}
-            aria-label='Redo'
-            title='Redo (Ctrl+Y / Cmd+Shift+Z)'
-          >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 8L9 5M12 8L9 11M12 8H4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
-        </div>
-      </div>
-      <div className='header-row-meta'>
-        <div className='meta-dates-group'>
-          {dateFromEdit.editing ? (
-            <input
-              ref={dateFromEdit.ref}
-              type='date'
-              className='date-input-inline'
-              value={state.present.dateFrom}
-              onChange={(e) =>
-                dispatch({ type: ACTION_TYPES.SET_DATE_FROM, payload: e.target.value })
-              }
-              onBlur={dateFromEdit.close}
-              onKeyDown={dateFromEdit.handleKeyDown}
-              aria-label='Start date'
+            <Header
+              state={state.present}
+              dispatch={dispatch}
+              undo={undo}
+              redo={redo}
+              canUndo={canUndo}
+              canRedo={canRedo}
+              sprintEdit={sprintEdit}
+              offsetEdit={offsetEdit}
+              dateFromEdit={dateFromEdit}
+              dateToEdit={dateToEdit}
+              v1Error={v1Error}
+              onDismissV1Error={() => setV1Error(false)}
             />
-          ) : (
-            <button
-              className='date-display'
-              onClick={dateFromEdit.open}
-              title='Click to edit start date'
-            >
-              {formatDate(state.present.dateFrom) || "No start date"}
-            </button>
-          )}
-          <span className='date-arrow'>→</span>
-          {dateToEdit.editing ? (
-            <input
-              ref={dateToEdit.ref}
-              type='date'
-              className='date-input-inline'
-              value={state.present.dateTo}
-              onChange={(e) =>
-                dispatch({ type: ACTION_TYPES.SET_DATE_TO, payload: e.target.value })
-              }
-              onBlur={dateToEdit.close}
-              onKeyDown={dateToEdit.handleKeyDown}
-              aria-label='End date'
-            />
-          ) : (
-            <button
-              className='date-display'
-              onClick={dateToEdit.open}
-              title='Click to edit end date'
-            >
-              {formatDate(state.present.dateTo) || "No end date"}
-            </button>
-          )}
-        </div>
-      <div className='meta-badges-group'>
-        {sprintEdit.editing ? (
-          <input
-            ref={sprintEdit.ref}
-            type='number'
-            className='sprint-badge-input'
-            value={sprintEdit.draft}
-            min={1}
-            step={1}
-            onChange={(e) =>
-              sprintEdit.setDraft(e.target.value)
-            }
-            onBlur={sprintEdit.commit}
-            onKeyDown={sprintEdit.handleKeyDown}
-            aria-label='Number of additional sprints'
-          />
-        ) : (
-          <button
-            className='sprint-badge'
-            onClick={sprintEdit.open}
-            title='Click to edit sprint count'
-            aria-label={`${state.present.sprintCount} sprint${state.present.sprintCount !== 1 ? "s" : ""} — click to edit`}
-          >
-            {state.present.sprintCount} sprint
-            {state.present.sprintCount !== 1 ? "s" : ""}
-            <PencilIcon className='sprint-badge-icon' />
-          </button>
-        )}
-        {offsetEdit.editing ? (
-          <input
-            ref={offsetEdit.ref}
-            type='number'
-            className='offset-badge-input'
-            value={offsetEdit.draft}
-            min={0}
-            step={1}
-            onChange={(e) =>
-              offsetEdit.setDraft(e.target.value)
-            }
-            onBlur={offsetEdit.commit}
-            onKeyDown={offsetEdit.handleKeyDown}
-            aria-label='Sprint offset'
-          />
-        ) : (
-          <button
-            className='offset-badge'
-            onClick={offsetEdit.open}
-            title='Click to edit sprint offset'
-            aria-label={`Offset ${state.present.sprintOffset} — click to edit`}
-          >
-            +{state.present.sprintOffset}
-            <PencilIcon className='sprint-badge-icon' />
-          </button>
-          )}
-        </div>
-        </div>
-
-      {v1Error && (
-        <div className='v1-error-banner'>
-          <span>
-            This link uses an older format. Please start fresh.
-          </span>
-          <button
-            onClick={() => setV1Error(false)}
-            aria-label='Dismiss'
-          >
-            &times;
-          </button>
-        </div>
-      )}
-    </header>
 
             {/* ── Stats Bar ────────────────────────────────────────────────── */}
             <StatsBar sprintMap={sprintMap} maxScope={maxScope} />
 
             {/* ── Chart Zone ────────────────────────────────────────────────── */}
             <section className='card chart-card' ref={chartRef}>
-      <BurnupChart
-        chartData={chartData}
-        chartConfig={state.present.chartConfig}
-        onChartConfigChange={handleChartConfigChange}
-        chartRef={chartRef}
-        dateFrom={state.present.dateFrom}
-        dateTo={state.present.dateTo}
-      />
+              <BurnupChart
+                chartData={chartData}
+                chartConfig={state.present.chartConfig}
+                onChartConfigChange={handleChartConfigChange}
+                chartRef={chartRef}
+                dateFrom={state.present.dateFrom}
+                dateTo={state.present.dateTo}
+              />
             </section>
 
             {/* ── Data Table (accordion) ──────────────────────────────────── */}

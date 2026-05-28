@@ -1,17 +1,16 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import BurnupChart from './BurnupChart'
+import { computeChartData } from '../lib/chartData'
 
 describe('BurnupChart', () => {
   const baseProps = {
-    sprints: [],
-    entries: [],
+    chartData: [],
     chartConfig: {},
     onChartConfigChange: () => {},
     chartRef: { current: null },
     dateFrom: '',
     dateTo: '',
-    title: '',
   }
 
   it('shows empty state when no data', () => {
@@ -22,17 +21,16 @@ describe('BurnupChart', () => {
   })
 
   it('renders chart controls when data exists', () => {
-    const props = {
-      ...baseProps,
-      sprints: [
-        { id: 's0', name: 'Sprint 1' },
-        { id: 's1', name: 'Sprint 2' },
-      ],
-      entries: [
-        { id: 'e1', sprintId: 's0', tipo: 'Scope', valor: 10, mode: 'relative' },
-        { id: 'e2', sprintId: 's0', tipo: 'Completed', valor: 5, mode: 'relative' },
-      ],
-    }
+    const sprints = [
+      { id: 's0', name: 'Sprint 1' },
+      { id: 's1', name: 'Sprint 2' },
+    ]
+    const entries = [
+      { id: 'e1', sprintId: 's0', tipo: 'Scope', valor: 10, mode: 'relative' },
+      { id: 'e2', sprintId: 's0', tipo: 'Completed', valor: 5, mode: 'relative' },
+    ]
+    const { data: chartData } = computeChartData(sprints, entries)
+    const props = { ...baseProps, chartData }
     render(<BurnupChart {...props} />)
     expect(
       document.querySelector('.burnup-chart-container'),

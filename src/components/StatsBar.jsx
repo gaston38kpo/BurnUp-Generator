@@ -11,15 +11,12 @@
  */
 
 import { useMemo } from 'react'
-import { computeCumulatives } from '../lib/chartData'
 
-export default function StatsBar({ entries, sprints }) {
+export default function StatsBar({ sprintMap, maxScope }) {
   const stats = useMemo(() => {
-    const { sprintMap } = computeCumulatives(sprints || [], entries)
-    const lastSprint = sprints[sprints.length - 1]
-    const lastValues = lastSprint ? sprintMap.get(lastSprint.id) : { scope: 0, completed: 0 }
-    const totalScope = lastValues?.scope ?? 0
-    const totalCompleted = lastValues?.completed ?? 0
+    const values = [...sprintMap.values()]
+    const totalScope = maxScope
+    const totalCompleted = values.length > 0 ? values[values.length - 1].completed : 0
     const remaining = Math.max(0, totalScope - totalCompleted)
     const pct =
       totalScope > 0
@@ -27,7 +24,7 @@ export default function StatsBar({ entries, sprints }) {
         : 0
 
     return { totalScope, totalCompleted, remaining, pct }
-  }, [entries, sprints])
+  }, [sprintMap, maxScope])
 
   const hasScope = stats.totalScope > 0
 

@@ -24,7 +24,7 @@
  * - Badge shows N (additional sprints), not counting Sprint 0
  */
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import BurnupChart from "./components/BurnupChart";
 import StatsBar from "./components/StatsBar";
 import DataTable from "./components/DataTable";
@@ -41,6 +41,7 @@ import useUndoRedo, { DEFAULT_STATE } from "./lib/useUndoRedo";
 import useInlineEdit from "./lib/useInlineEdit";
 import { cssVarOverrides } from "./lib/colors";
 import { formatDate } from "./lib/formatDate.js";
+import { computeChartData } from "./lib/chartData";
 import "./App.css";
 
 /** Normalize legacy idealColor "#FFFFFF" to "" (now theme-aware) */
@@ -166,11 +167,25 @@ export default function App() {
         dispatch({ type: 'SET_CHART_CONFIG', payload: fullConfig });
     }, [dispatch]);
 
-    // ─── Render ─────────────────────────────────────────────────────────────
+    // ─── Computed data (memoized) ─────────────────────────────────────────┬─
+  const { data: chartData, maxScope, sprintMap } = useMemo(
+    () => computeChartData(state.present.sprints, state.present.entries),
+    [state.present.sprints, state.present.entries],
+  )
+
+  const cssVars = useMemo(
+    () => cssVarOverrides(
+      state.present.chartConfig.scopeColor,
+      state.present.chartConfig.completedColor,
+      state.present.chartConfig.idealColor,
+    ),
+    [state.present.chartConfig],
+  )
+    // ─── Render ──────────────────────────────────────────────────────────┴─
 
     return (
         <div className='app-layout'>
-            <style dangerouslySetInnerHTML={{ __html: cssVarOverrides(state.present.chartConfig.scopeColor, state.present.chartConfig.completedColor, state.present.chartConfig.idealColor) }} />
+            <style dangerouslySetInnerHTML={{ __html: cssVars }} />
             {/* ── Header ─────────────────────────────────────────────────────── */}
 <header className='app-header'>
       <div className='header-row-primary'>
@@ -331,19 +346,17 @@ export default function App() {
     </header>
 
             {/* ── Stats Bar ────────────────────────────────────────────────── */}
-            <StatsBar entries={state.present.entries} sprints={state.present.sprints} />
+            <StatsBar sprintMap={sprintMap} maxScope={maxScope} />
 
             {/* ── Chart Zone ────────────────────────────────────────────────── */}
             <section className='card chart-card' ref={chartRef}>
       <BurnupChart
-        sprints={state.present.sprints}
-        entries={state.present.entries}
+        chartData={chartData}
         chartConfig={state.present.chartConfig}
         onChartConfigChange={handleChartConfigChange}
         chartRef={chartRef}
         dateFrom={state.present.dateFrom}
         dateTo={state.present.dateTo}
-        title={state.present.title}
       />
             </section>
 
@@ -356,6 +369,7 @@ export default function App() {
                 <DataTable
                     sprints={state.present.sprints}
                     entries={state.present.entries}
+                    sprintMap={sprintMap}
                     onEntryChange={handleEntryChange}
                     onEntryDelete={handleEntryDelete}
                     onEntryAdd={handleEntryAdd}

@@ -9,7 +9,6 @@
  * One data point per sprint. Sprint names are X-axis labels.
  */
 
-import { useMemo } from "react";
 import {
     ComposedChart,
     Line,
@@ -21,7 +20,7 @@ import {
     Legend,
     ResponsiveContainer,
 } from "recharts";
-import { computeChartData } from "../lib/chartData";
+import { memo } from "react";
 import { formatDate } from "../lib/formatDate.js";
 import ChartSettings from "./ChartSettings";
 import ChartCopyButton from "./ChartCopyButton";
@@ -71,20 +70,14 @@ function CustomTooltip({ active, payload, label }) {
     );
 }
 
-export default function BurnupChart({
-  sprints,
-  entries,
+const BurnupChart = memo(function BurnupChart({
+  chartData,
   chartConfig,
   onChartConfigChange,
   chartRef,
   dateFrom,
   dateTo,
 }) {
-    const { data: chartData } = useMemo(
-        () => computeChartData(sprints, entries),
-        [sprints, entries],
-    );
-
     const idealColor = chartConfig.idealColor || "var(--ideal)";
 
   const hasData = chartData.length > 0;
@@ -156,8 +149,8 @@ export default function BurnupChart({
           {fromDate}{fromDate && toDate ? ' → ' : ''}{toDate}
         </p>
       )}
-    </div>
-  );
+        </div>
+    );
   }
 
   return (
@@ -327,7 +320,9 @@ export default function BurnupChart({
                           />
                       )}
                  </ComposedChart>
-            </ResponsiveContainer>
+             </ResponsiveContainer>
         </div>
     );
-}
+});
+
+export default BurnupChart;

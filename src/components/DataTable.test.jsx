@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import DataTable from './DataTable'
+import { computeCumulatives } from '../lib/chartData'
 
 describe('DataTable', () => {
   const sprints = [
@@ -11,6 +12,7 @@ describe('DataTable', () => {
   const baseProps = {
     sprints,
     entries: [],
+    sprintMap: new Map(),
     onEntryChange: vi.fn(),
     onEntryDelete: vi.fn(),
     onEntryAdd: vi.fn(),
@@ -61,7 +63,8 @@ describe('DataTable', () => {
       { id: 'e1', sprintId: 's0', tipo: 'Scope', valor: 10, mode: 'relative' },
       { id: 'e2', sprintId: 's0', tipo: 'Completed', valor: 5, mode: 'relative' },
     ]
-    const props = { ...baseProps, entries }
+    const { sprintMap } = computeCumulatives(sprints, entries)
+    const props = { ...baseProps, entries, sprintMap }
     render(<DataTable {...props} />)
 
     // Both type pills should be disabled since switching would create a duplicate
@@ -77,18 +80,17 @@ describe('DataTable', () => {
   })
 
   it('deletes an entry', () => {
-    const props = {
-      ...baseProps,
-      entries: [
-        {
-          id: 'e1',
-          sprintId: 's0',
-          tipo: 'Scope',
-          valor: 10,
-          mode: 'relative',
-        },
-      ],
-    }
+    const entries = [
+      {
+        id: 'e1',
+        sprintId: 's0',
+        tipo: 'Scope',
+        valor: 10,
+        mode: 'relative',
+      },
+    ]
+    const { sprintMap } = computeCumulatives(sprints, entries)
+    const props = { ...baseProps, entries, sprintMap }
     render(<DataTable {...props} />)
     const deleteBtn = screen.getByLabelText('Delete entry')
     fireEvent.click(deleteBtn)

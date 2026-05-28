@@ -15,9 +15,8 @@
  * └───────────────────────────────────────────────────────────────┘
  */
 
-import { useState, useCallback, useRef, useMemo, useEffect } from 'react'
+import { useState, useCallback, useRef, useMemo, useEffect, memo } from 'react'
 import { PlusIcon, CloseIcon, EmptyTableIcon } from '../assets/icons'
-import { computeCumulatives } from '../lib/chartData'
 
 /**
  * EntryValueInput — local-state wrapper for existing entry value inputs.
@@ -54,9 +53,10 @@ function EntryValueInput({ value, entryId, onEntryChange }) {
   )
 }
 
-export default function DataTable({
+const DataTable = memo(function DataTable({
   sprints,
   entries,
+  sprintMap,
   onEntryChange,
   onEntryDelete,
   onEntryAdd,
@@ -96,11 +96,6 @@ export default function DataTable({
       })
   }, [entries, sprints])
 
-  const { sprintMap } = useMemo(
-    () => computeCumulatives(sprints, entries),
-    [sprints, entries]
-  )
-
   const isScope = (tipo) => tipo === 'Scope'
   const hasSprints = sprints.length > 0
 
@@ -114,12 +109,11 @@ export default function DataTable({
     return { Scope: scope, Completed: completed }
   }, [entries])
 
-  const availableSprintsForTipo = useCallback(
-    (tipo) => {
-      return sprints.filter((s) => !usedSprints[tipo].has(s.id))
-    },
-    [sprints, usedSprints]
-  )
+  const availableByTipo = useMemo(() => {
+    const scope = sprints.filter((s) => !usedSprints.Scope.has(s.id))
+    const completed = sprints.filter((s) => !usedSprints.Completed.has(s.id))
+    return { Scope: scope, Completed: completed }
+  }, [sprints, usedSprints])
 
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect */
@@ -127,14 +121,14 @@ export default function DataTable({
       setTplSprintId('')
       return
     }
-    const available = availableSprintsForTipo(tplTipo)
+    const available = availableByTipo[tplTipo]
     if (available.length === 0) {
       setTplSprintId('')
     } else if (!available.some((s) => s.id === tplSprintId)) {
       setTplSprintId(available[0].id)
     }
     /* eslint-enable react-hooks/set-state-in-effect */
-  }, [sprints, tplTipo, usedSprints, availableSprintsForTipo, tplSprintId])
+  }, [sprints, tplTipo, usedSprints, availableByTipo, tplSprintId])
 
   const wouldToggleDuplicate = useCallback(
     (entryId, entryTipo, entrySprintId) => {
@@ -180,12 +174,12 @@ export default function DataTable({
               value={tplSprintId}
               onChange={(e) => setTplSprintId(e.target.value)}
               disabled={
-                !hasSprints || availableSprintsForTipo(tplTipo).length === 0
+                !hasSprints || availableByTipo[tplTipo].length === 0
               }
               aria-label="New entry sprint"
             >
               {(() => {
-                const available = availableSprintsForTipo(tplTipo)
+                const available = availableByTipo[tplTipo]
                 return available.length > 0 ? (
                   available.map((s) => (
                     <option key={s.id} value={s.id}>
@@ -389,4 +383,6 @@ export default function DataTable({
       )}
     </div>
   )
-}
+})
+
+export default DataTable

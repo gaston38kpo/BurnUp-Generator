@@ -190,7 +190,7 @@ export function encodeState(state) {
   try {
     const compact = stateToCompact(state)
     const json = JSON.stringify(compact)
-    const compressed = pako.deflate(json, { level: 9 })
+    const compressed = pako.deflate(json, { level: 6 })
     return uint8ToBase64Url(compressed)
   } catch (e) {
     console.error('encodeState failed:', e)

@@ -45,7 +45,7 @@ export function computeCumulatives(sprints, entries) {
 }
 
 export function computeChartData(sprints, entries) {
-  if (!sprints.length) return { data: [], maxScope: 0 }
+  if (!sprints.length) return { data: [], maxScope: 0, sprintMap: new Map() }
 
   const { sprintMap, maxScope, entryBySprintTipo } = computeCumulatives(sprints, entries)
 
@@ -99,5 +99,5 @@ export function computeChartData(sprints, entries) {
     }
   }
 
-  return { data, maxScope }
+  return { data, maxScope, sprintMap }
 }

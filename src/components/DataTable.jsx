@@ -29,6 +29,7 @@ function EntryValueInput({ value, entryId, onEntryChange }) {
 
   // Sync from external value (e.g. after undo/redo)
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLocal(value)
   }, [value])
 
@@ -121,6 +122,7 @@ export default function DataTable({
   )
 
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect */
     if (sprints.length === 0) {
       setTplSprintId('')
       return
@@ -131,6 +133,7 @@ export default function DataTable({
     } else if (!available.some((s) => s.id === tplSprintId)) {
       setTplSprintId(available[0].id)
     }
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [sprints, tplTipo, usedSprints, availableSprintsForTipo, tplSprintId])
 
   const wouldToggleDuplicate = useCallback(
@@ -272,9 +275,6 @@ export default function DataTable({
               {displayEntries.map((entry) => {
                 const scoped = isScope(entry.tipo)
                 const cumVal = sprintMap.get(entry.sprintId)?.[entry.tipo.toLowerCase()] ?? 0
-                const sprintName =
-                  sprints.find((s) => s.id === entry.sprintId)?.name ||
-                  'Unknown'
                 const switchedTipo = scoped ? 'Completed' : 'Scope'
                 const isToggleDisabled = wouldToggleDuplicate(
                   entry.id,

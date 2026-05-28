@@ -20,7 +20,9 @@ export default function ChartSettings({ chartConfig, onChartConfigChange }) {
   const popoverRef = useRef(null)
   const buttonRef = useRef(null)
   const chartConfigRef = useRef(chartConfig)
-  chartConfigRef.current = chartConfig
+  useEffect(() => {
+    chartConfigRef.current = chartConfig
+  }, [chartConfig])
 
   const handleApply = useCallback(() => {
     if (draft) {
@@ -110,11 +112,10 @@ export default function ChartSettings({ chartConfig, onChartConfigChange }) {
             onChange={setDraftValue}
           />
            <IdealConfig
-             colorKey="idealColor"
-             defaultColor="#FFFFFF"
-             config={config}
-             onChange={setDraftValue}
-           />
+              colorKey="idealColor"
+              config={config}
+              onChange={setDraftValue}
+            />
             <div className="chart-settings-section">
               <span className="chart-settings-label">Trend Line</span>
               <div className="chart-settings-row">
@@ -211,7 +212,7 @@ aria-label={`Reset ${label} color`}
   )
 }
 
-function IdealConfig({ colorKey, defaultColor, config, onChange }) {
+function IdealConfig({ colorKey, config, onChange }) {
   const computedDefault = typeof window !== 'undefined'
     ? getComputedStyle(document.documentElement).getPropertyValue('--ideal').trim()
     : '#000000'

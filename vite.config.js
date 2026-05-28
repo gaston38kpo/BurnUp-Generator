@@ -8,11 +8,9 @@ export default defineConfig({
   plugins: [react(), svgr()],
   base: '/BurnUp-Generator/',
   test: {
-    include: ['src/**/*.test.js'],
-    environment: 'node',
     coverage: {
       provider: 'v8',
-      include: ['src/lib/**'],
+      include: ['src/lib/**', 'src/components/**'],
       reporter: ['text', 'lcov', 'html'],
       thresholds: {
         statements: 90,
@@ -21,5 +19,26 @@ export default defineConfig({
         lines: 90,
       },
     },
+    globals: true,
+    // Projects split by environment (vitest v4 removed environmentMatchGlobs)
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: 'lib',
+          include: ['src/lib/**/*.test.{js,jsx}'],
+          environment: 'node',
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'components',
+          include: ['src/components/**/*.test.{js,jsx}', 'src/App.test.{js,jsx}'],
+          environment: 'jsdom',
+          setupFiles: ['./src/test-setup.js'],
+        },
+      },
+    ],
   },
 })

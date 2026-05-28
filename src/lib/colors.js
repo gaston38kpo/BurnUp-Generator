@@ -1,5 +1,6 @@
 export function hexToRgb(hex) {
-  const h = hex.replace('#', '')
+  const h = hex.replace('#', '').trim()
+  if (!h) return { r: 0, g: 0, b: 0 }
   return {
     r: parseInt(h.substring(0, 2), 16),
     g: parseInt(h.substring(2, 4), 16),
@@ -7,34 +8,36 @@ export function hexToRgb(hex) {
   }
 }
 
+function color(hex, opacity) {
+  if (!hex || !hex.replace('#', '').trim()) return 'transparent'
+  const { r, g, b } = hexToRgb(hex)
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`
+}
+
 export function cssVarOverrides(scopeColor, completedColor, idealColor) {
-  const s = hexToRgb(scopeColor)
-  const c = hexToRgb(completedColor)
   let out = `:root {\n`
-  out += `  --scope: ${scopeColor};\n`
-  out += `  --scope-bg: rgba(${s.r}, ${s.g}, ${s.b}, 0.08);\n`
-  out += `  --scope-border: rgba(${s.r}, ${s.g}, ${s.b}, 0.25);\n`
-  out += `  --completed: ${completedColor};\n`
-  out += `  --completed-bg: rgba(${c.r}, ${c.g}, ${c.b}, 0.08);\n`
-  out += `  --completed-border: rgba(${c.r}, ${c.g}, ${c.b}, 0.25);\n`
+  out += `  --scope: ${scopeColor || 'transparent'};\n`
+  out += `  --scope-bg: ${color(scopeColor, 0.08)};\n`
+  out += `  --scope-border: ${color(scopeColor, 0.25)};\n`
+  out += `  --completed: ${completedColor || 'transparent'};\n`
+  out += `  --completed-bg: ${color(completedColor, 0.08)};\n`
+  out += `  --completed-border: ${color(completedColor, 0.25)};\n`
   if (idealColor) {
-    const i = hexToRgb(idealColor)
     out += `  --ideal: ${idealColor};\n`
-    out += `  --ideal-bg: rgba(${i.r}, ${i.g}, ${i.b}, 0.08);\n`
+    out += `  --ideal-bg: ${color(idealColor, 0.08)};\n`
   }
   out += `}\n`
   out += `@media (prefers-color-scheme: dark) {\n`
   out += `  :root {\n`
-  out += `    --scope: ${scopeColor};\n`
-  out += `    --scope-bg: rgba(${s.r}, ${s.g}, ${s.b}, 0.1);\n`
-  out += `    --scope-border: rgba(${s.r}, ${s.g}, ${s.b}, 0.3);\n`
-  out += `    --completed: ${completedColor};\n`
-  out += `    --completed-bg: rgba(${c.r}, ${c.g}, ${c.b}, 0.1);\n`
-  out += `    --completed-border: rgba(${c.r}, ${c.g}, ${c.b}, 0.3);\n`
+  out += `    --scope: ${scopeColor || 'transparent'};\n`
+  out += `    --scope-bg: ${color(scopeColor, 0.1)};\n`
+  out += `    --scope-border: ${color(scopeColor, 0.3)};\n`
+  out += `    --completed: ${completedColor || 'transparent'};\n`
+  out += `    --completed-bg: ${color(completedColor, 0.1)};\n`
+  out += `    --completed-border: ${color(completedColor, 0.3)};\n`
   if (idealColor) {
-    const i = hexToRgb(idealColor)
     out += `    --ideal: ${idealColor};\n`
-    out += `    --ideal-bg: rgba(${i.r}, ${i.g}, ${i.b}, 0.1);\n`
+    out += `    --ideal-bg: ${color(idealColor, 0.1)};\n`
   }
   out += `  }\n`
   out += `}\n`

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/refs -- false positives from useInlineEdit hook */
 /**
  * App.jsx — Main orchestrator for the Sprint-Based Burnup Chart Generator
  *
@@ -37,6 +38,7 @@ import {
     writeUrlToken,
 } from "./lib/urlState";
 import useUndoRedo, { DEFAULT_STATE } from "./lib/useUndoRedo";
+import useInlineEdit from "./lib/useInlineEdit";
 import { cssVarOverrides } from "./lib/colors";
 import { formatDate } from "./lib/formatDate.js";
 import "./App.css";
@@ -119,119 +121,18 @@ export default function App() {
     }, [undo, redo, canUndo, canRedo]);
 
   // ─── Sprint badge inline-edit ──────────────────────────────────────────
-  const [editingSprint, setEditingSprint] = useState(false);
-  const [sprintDraft, setSprintDraft] = useState(String(state.present.sprintCount));
-  const sprintEditRef = useRef(null);
-
-  useEffect(() => {
-    if (editingSprint && sprintEditRef.current) {
-      sprintEditRef.current.focus();
-      sprintEditRef.current.select();
-    }
-  }, [editingSprint]);
-
-  const openSprintEdit = useCallback(() => {
-    setSprintDraft(String(state.present.sprintCount));
-    setEditingSprint(true);
-  }, [state.present.sprintCount]);
-
-  const commitSprintEdit = useCallback(() => {
-    const val = Math.max(1, parseInt(sprintDraft, 10) || 1);
-    setSprintDraft(String(val));
-    dispatch({ type: 'SET_SPRINT_COUNT', payload: val });
-    setEditingSprint(false);
-  }, [sprintDraft, dispatch]);
-
-  const cancelSprintEdit = useCallback(() => {
-    setSprintDraft(String(state.present.sprintCount));
-    setEditingSprint(false);
-  }, [state.present.sprintCount]);
-
-    const handleSprintKeyDown = useCallback(
-        (e) => {
-            if (e.key === "Enter") {
-                e.preventDefault();
-                commitSprintEdit();
-            } else if (e.key === "Escape") {
-                e.preventDefault();
-                cancelSprintEdit();
-            }
-        },
-        [commitSprintEdit, cancelSprintEdit],
-    );
-
-  // ─── Sprint draft sync ─────────────────────────────────────────────────
-  useEffect(() => {
-    if (!editingSprint) {
-      setSprintDraft(String(state.present.sprintCount));
-    }
-  }, [state.present.sprintCount, editingSprint]);
+  const sprintEdit = useInlineEdit(state.present.sprintCount, 1, (v) =>
+    dispatch({ type: 'SET_SPRINT_COUNT', payload: v }),
+  );
 
   // ─── Offset badge inline-edit ──────────────────────────────────────────
-  const [editingOffset, setEditingOffset] = useState(false);
-  const [offsetDraft, setOffsetDraft] = useState(String(state.present.sprintOffset));
-  const offsetEditRef = useRef(null);
-
-  useEffect(() => {
-    if (editingOffset && offsetEditRef.current) {
-      offsetEditRef.current.focus();
-      offsetEditRef.current.select();
-    }
-  }, [editingOffset]);
-
-  useEffect(() => {
-    if (!editingOffset) {
-      setOffsetDraft(String(state.present.sprintOffset));
-    }
-  }, [state.present.sprintOffset, editingOffset]);
-
-  const openOffsetEdit = useCallback(() => {
-    setOffsetDraft(String(state.present.sprintOffset));
-    setEditingOffset(true);
-  }, [state.present.sprintOffset]);
-
-  const commitOffsetEdit = useCallback(() => {
-    const val = Math.max(0, parseInt(offsetDraft, 10) || 0);
-    setOffsetDraft(String(val));
-    dispatch({ type: 'SET_SPRINT_OFFSET', payload: val });
-    setEditingOffset(false);
-  }, [offsetDraft, dispatch]);
-
-  const cancelOffsetEdit = useCallback(() => {
-    setOffsetDraft(String(state.present.sprintOffset));
-    setEditingOffset(false);
-  }, [state.present.sprintOffset]);
-
-  const handleOffsetKeyDown = useCallback(
-    (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        commitOffsetEdit();
-      } else if (e.key === "Escape") {
-        e.preventDefault();
-        cancelOffsetEdit();
-      }
-    },
-    [commitOffsetEdit, cancelOffsetEdit],
+  const offsetEdit = useInlineEdit(state.present.sprintOffset, 0, (v) =>
+    dispatch({ type: 'SET_SPRINT_OFFSET', payload: v }),
   );
 
     // ─── Date inline-edit ──────────────────────────────────────────────────
-    const [editingDateFrom, setEditingDateFrom] = useState(false);
-    const [editingDateTo, setEditingDateTo] = useState(false);
-    const dateFromEditRef = useRef(null);
-    const dateToEditRef = useRef(null);
-
-    useEffect(() => {
-        if (editingDateFrom && dateFromEditRef.current) {
-            dateFromEditRef.current.focus();
-        }
-    }, [editingDateFrom]);
-
-    useEffect(() => {
-        if (editingDateTo && dateToEditRef.current) {
-            dateToEditRef.current.focus();
-        }
-    }, [editingDateTo]);
+    const dateFromEdit = useInlineEdit();
+    const dateToEdit = useInlineEdit();
 
     // ─── Entry mutation handlers ────────────────────────────────────────────
     const handleEntryAdd = useCallback((sprintId, tipo, valor, mode) => {
@@ -311,52 +212,46 @@ export default function App() {
       </div>
       <div className='header-row-meta'>
         <div className='meta-dates-group'>
-          {editingDateFrom ? (
+          {dateFromEdit.editing ? (
             <input
-              ref={dateFromEditRef}
+              ref={dateFromEdit.ref}
               type='date'
               className='date-input-inline'
               value={state.present.dateFrom}
               onChange={(e) =>
                 dispatch({ type: 'SET_DATE_FROM', payload: e.target.value })
               }
-              onBlur={() => setEditingDateFrom(false)}
-              onKeyDown={(e) => {
-                if (e.key === "Escape")
-                  setEditingDateFrom(false);
-              }}
+              onBlur={dateFromEdit.close}
+              onKeyDown={dateFromEdit.handleKeyDown}
               aria-label='Start date'
             />
           ) : (
             <button
               className='date-display'
-              onClick={() => setEditingDateFrom(true)}
+              onClick={dateFromEdit.open}
               title='Click to edit start date'
             >
               {formatDate(state.present.dateFrom) || "No start date"}
             </button>
           )}
           <span className='date-arrow'>→</span>
-          {editingDateTo ? (
+          {dateToEdit.editing ? (
             <input
-              ref={dateToEditRef}
+              ref={dateToEdit.ref}
               type='date'
               className='date-input-inline'
               value={state.present.dateTo}
               onChange={(e) =>
                 dispatch({ type: 'SET_DATE_TO', payload: e.target.value })
               }
-              onBlur={() => setEditingDateTo(false)}
-              onKeyDown={(e) => {
-                if (e.key === "Escape")
-                  setEditingDateTo(false);
-              }}
+              onBlur={dateToEdit.close}
+              onKeyDown={dateToEdit.handleKeyDown}
               aria-label='End date'
             />
           ) : (
             <button
               className='date-display'
-              onClick={() => setEditingDateTo(true)}
+              onClick={dateToEdit.open}
               title='Click to edit end date'
             >
               {formatDate(state.present.dateTo) || "No end date"}
@@ -364,25 +259,25 @@ export default function App() {
           )}
         </div>
       <div className='meta-badges-group'>
-        {editingSprint ? (
+        {sprintEdit.editing ? (
           <input
-            ref={sprintEditRef}
+            ref={sprintEdit.ref}
             type='number'
             className='sprint-badge-input'
-            value={sprintDraft}
+            value={sprintEdit.draft}
             min={1}
             step={1}
             onChange={(e) =>
-              setSprintDraft(e.target.value)
+              sprintEdit.setDraft(e.target.value)
             }
-            onBlur={commitSprintEdit}
-            onKeyDown={handleSprintKeyDown}
+            onBlur={sprintEdit.commit}
+            onKeyDown={sprintEdit.handleKeyDown}
             aria-label='Number of additional sprints'
           />
         ) : (
           <button
             className='sprint-badge'
-            onClick={openSprintEdit}
+            onClick={sprintEdit.open}
             title='Click to edit sprint count'
             aria-label={`${state.present.sprintCount} sprint${state.present.sprintCount !== 1 ? "s" : ""} — click to edit`}
           >
@@ -391,34 +286,34 @@ export default function App() {
             <PencilIcon className='sprint-badge-icon' />
           </button>
         )}
-        {editingOffset ? (
+        {offsetEdit.editing ? (
           <input
-            ref={offsetEditRef}
+            ref={offsetEdit.ref}
             type='number'
             className='offset-badge-input'
-            value={offsetDraft}
+            value={offsetEdit.draft}
             min={0}
             step={1}
             onChange={(e) =>
-              setOffsetDraft(e.target.value)
+              offsetEdit.setDraft(e.target.value)
             }
-            onBlur={commitOffsetEdit}
-            onKeyDown={handleOffsetKeyDown}
+            onBlur={offsetEdit.commit}
+            onKeyDown={offsetEdit.handleKeyDown}
             aria-label='Sprint offset'
           />
         ) : (
           <button
             className='offset-badge'
-            onClick={openOffsetEdit}
+            onClick={offsetEdit.open}
             title='Click to edit sprint offset'
             aria-label={`Offset ${state.present.sprintOffset} — click to edit`}
           >
             +{state.present.sprintOffset}
             <PencilIcon className='sprint-badge-icon' />
           </button>
-        )}
-      </div>
-      </div>
+          )}
+        </div>
+        </div>
 
       {v1Error && (
         <div className='v1-error-banner'>

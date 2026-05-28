@@ -41,20 +41,15 @@ export function computeCumulatives(sprints, entries) {
     sprintMap.set(s.id, { scope: scopeAcc, completed: completedAcc })
   }
 
-  return { sprintMap, maxScope: scopeAcc }
+  return { sprintMap, maxScope: scopeAcc, entryBySprintTipo }
 }
 
 export function computeChartData(sprints, entries) {
   if (!sprints.length) return { data: [], maxScope: 0 }
 
-  const { sprintMap, maxScope } = computeCumulatives(sprints, entries)
+  const { sprintMap, maxScope, entryBySprintTipo } = computeCumulatives(sprints, entries)
 
   // Find the last sprint index that has a Completed entry
-  const entryBySprintTipo = new Map()
-  for (const e of entries) {
-    entryBySprintTipo.set(e.sprintId + '|' + e.tipo, true)
-  }
-
   let lastCompletedIdx = -1
   for (let i = sprints.length - 1; i >= 0; i--) {
     if (entryBySprintTipo.has(sprints[i].id + '|Completed')) {
@@ -74,7 +69,7 @@ export function computeChartData(sprints, entries) {
     .map((d, i) => ({ x: i, y: d.completed }))
     .filter(p => p.y !== null)
 
-  let trendValue = 0
+  let regression = null
   if (completedPoints.length >= 2) {
     const n = completedPoints.length
     let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0
@@ -89,15 +84,14 @@ export function computeChartData(sprints, entries) {
     const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX)
     const intercept = (sumY - slope * sumX) / n
 
-    // We store the formula in the loop below
-    var regression = { slope, intercept }
+    regression = { slope, intercept }
   }
 
   for (let i = 0; i < data.length; i++) {
     const ideal = data.length > 1 ? (maxScope * i) / (data.length - 1) : 0
     data[i].ideal = Math.round(ideal * 100) / 100
     
-    if (typeof regression !== 'undefined') {
+    if (regression !== null) {
       const val = regression.slope * i + regression.intercept
       data[i].trendValue = Math.round(val * 100) / 100
     } else {

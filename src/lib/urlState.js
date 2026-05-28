@@ -100,9 +100,9 @@ function compactToState(compact) {
   // v4: [4, title, dateFrom, dateTo, sprintNames..., null, entries...]
   // v3: [3, title, sprintNames..., null, entries...]
   // v2: [2, title, sprintNames..., null, entries...]
-  let title = ''
-  let dateFrom = ''
-  let dateTo = ''
+  let title
+  let dateFrom
+  let dateTo
   let sprintOffset = 0
   let sprintsStart
 

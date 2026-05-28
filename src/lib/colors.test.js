@@ -80,3 +80,34 @@ describe('cssVarOverrides', () => {
     expect(css).toContain('}')
   })
 })
+
+// ─── Edge cases: empty / whitespace input ─────────────────────────────────────
+
+describe('hexToRgb edge cases', () => {
+  it('returns { r: 0, g: 0, b: 0 } for empty string', () => {
+    expect(hexToRgb('')).toEqual({ r: 0, g: 0, b: 0 })
+  })
+
+  it('returns { r: 0, g: 0, b: 0 } for whitespace-only string', () => {
+    expect(hexToRgb('  ')).toEqual({ r: 0, g: 0, b: 0 })
+  })
+})
+
+describe('cssVarOverrides edge cases', () => {
+  it('uses transparent for scope vars when scopeColor is empty', () => {
+    const css = cssVarOverrides('', '#FCBF49', '')
+
+    expect(css).toContain('--scope: transparent')
+    expect(css).toContain('--scope-bg: transparent')
+    expect(css).toContain('--scope-border: transparent')
+    expect(css).toContain('--completed: #FCBF49')
+  })
+
+  it('produces valid CSS with no NaN when all colors empty', () => {
+    const css = cssVarOverrides('', '', '')
+
+    expect(css).not.toContain('NaN')
+    expect(css).toContain('--scope: transparent')
+    expect(css).toContain('--completed: transparent')
+  })
+})

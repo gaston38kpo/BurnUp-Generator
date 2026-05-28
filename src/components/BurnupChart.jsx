@@ -79,7 +79,6 @@ export default function BurnupChart({
   chartRef,
   dateFrom,
   dateTo,
-  title,
 }) {
     const { data: chartData } = useMemo(
         () => computeChartData(sprints, entries),

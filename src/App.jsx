@@ -24,7 +24,7 @@
  * - Badge shows N (additional sprints), not counting Sprint 0
  */
 
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useRef, useCallback, useMemo } from "react";
 import BurnupChart from "./components/BurnupChart";
 import StatsBar from "./components/StatsBar";
 import DataTable from "./components/DataTable";
@@ -32,13 +32,13 @@ import ShareFooter from "./components/ShareFooter";
 import Accordion from "./components/Accordion";
 import { BurnupLogo, PencilIcon } from "./assets/icons";
 import {
-    encodeState,
     decodeState,
     readUrlToken,
-    writeUrlToken,
 } from "./lib/urlState";
-import useUndoRedo, { DEFAULT_STATE } from "./lib/useUndoRedo";
+import useUndoRedo, { ACTION_TYPES, DEFAULT_STATE } from "./lib/useUndoRedo";
 import useInlineEdit from "./lib/useInlineEdit";
+import useUrlSync from "./lib/useUrlSync";
+import useKeyboardShortcuts from "./lib/useKeyboardShortcuts";
 import { cssVarOverrides } from "./lib/colors";
 import { formatDate } from "./lib/formatDate.js";
 import { computeChartData } from "./lib/chartData";
@@ -86,49 +86,17 @@ export default function App() {
 
   const chartRef = useRef(null);
 
-    // ─── URL synchronization (debounced) ────────────────────────────────────
-    const urlSyncTimer = useRef(null);
-
-    useEffect(() => {
-        if (urlSyncTimer.current) clearTimeout(urlSyncTimer.current);
-
-        urlSyncTimer.current = setTimeout(() => {
-            const token = encodeState(state.present);
-            writeUrlToken(token);
-        }, 300);
-
-        return () => {
-            if (urlSyncTimer.current) clearTimeout(urlSyncTimer.current);
-        };
-    }, [state.present]);
-
-    // ─── Keyboard shortcuts ───────────────────────────────────────────────────
-    useEffect(() => {
-        const handleKeyDown = (e) => {
-            const isUndo = (e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey;
-            const isRedo = (e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey));
-
-            if (isUndo && canUndo) {
-                e.preventDefault();
-                undo();
-            } else if (isRedo && canRedo) {
-                e.preventDefault();
-                redo();
-            }
-        };
-
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [undo, redo, canUndo, canRedo]);
+    useUrlSync(state.present);
+    useKeyboardShortcuts(undo, redo, canUndo, canRedo);
 
   // ─── Sprint badge inline-edit ──────────────────────────────────────────
   const sprintEdit = useInlineEdit(state.present.sprintCount, 1, (v) =>
-    dispatch({ type: 'SET_SPRINT_COUNT', payload: v }),
+    dispatch({ type: ACTION_TYPES.SET_SPRINT_COUNT, payload: v }),
   );
 
   // ─── Offset badge inline-edit ──────────────────────────────────────────
   const offsetEdit = useInlineEdit(state.present.sprintOffset, 0, (v) =>
-    dispatch({ type: 'SET_SPRINT_OFFSET', payload: v }),
+    dispatch({ type: ACTION_TYPES.SET_SPRINT_OFFSET, payload: v }),
   );
 
     // ─── Date inline-edit ──────────────────────────────────────────────────
@@ -139,32 +107,32 @@ export default function App() {
     const handleEntryAdd = useCallback((sprintId, tipo, valor, mode) => {
         if (!sprintId) return;
         dispatch({
-            type: 'ADD_ENTRY',
+            type: ACTION_TYPES.ADD_ENTRY,
             payload: { sprintId, tipo, valor, mode },
         });
     }, [dispatch]);
 
     const handleEntryChange = useCallback((id, field, value) => {
         dispatch({
-            type: 'UPDATE_ENTRY',
+            type: ACTION_TYPES.UPDATE_ENTRY,
             payload: { id, field, value },
         });
     }, [dispatch]);
 
     const handleEntryDelete = useCallback((id) => {
         dispatch({
-            type: 'DELETE_ENTRY',
+            type: ACTION_TYPES.DELETE_ENTRY,
             payload: id,
         });
     }, [dispatch]);
 
     const handleClear = useCallback(() => {
-        dispatch({ type: 'RESET' });
+        dispatch({ type: ACTION_TYPES.RESET });
         setV1Error(false);
     }, [dispatch]);
 
     const handleChartConfigChange = useCallback((fullConfig) => {
-        dispatch({ type: 'SET_CHART_CONFIG', payload: fullConfig });
+        dispatch({ type: ACTION_TYPES.SET_CHART_CONFIG, payload: fullConfig });
     }, [dispatch]);
 
     // ─── Computed data (memoized) ─────────────────────────────────────────┬─
@@ -195,7 +163,7 @@ export default function App() {
             type='text'
             className='title-input'
             value={state.present.title}
-            onChange={(e) => dispatch({ type: 'SET_TITLE', payload: e.target.value })}
+            onChange={(e) => dispatch({ type: ACTION_TYPES.SET_TITLE, payload: e.target.value })}
             placeholder='Burnup'
             aria-label='Chart title'
           />
@@ -234,7 +202,7 @@ export default function App() {
               className='date-input-inline'
               value={state.present.dateFrom}
               onChange={(e) =>
-                dispatch({ type: 'SET_DATE_FROM', payload: e.target.value })
+                dispatch({ type: ACTION_TYPES.SET_DATE_FROM, payload: e.target.value })
               }
               onBlur={dateFromEdit.close}
               onKeyDown={dateFromEdit.handleKeyDown}
@@ -257,7 +225,7 @@ export default function App() {
               className='date-input-inline'
               value={state.present.dateTo}
               onChange={(e) =>
-                dispatch({ type: 'SET_DATE_TO', payload: e.target.value })
+                dispatch({ type: ACTION_TYPES.SET_DATE_TO, payload: e.target.value })
               }
               onBlur={dateToEdit.close}
               onKeyDown={dateToEdit.handleKeyDown}

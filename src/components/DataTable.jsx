@@ -67,6 +67,7 @@ const DataTable = memo(function DataTable({
   const [tplTipo, setTplTipo] = useState('Completed')
   const [tplValor, setTplValor] = useState('')
   const [tplMode, setTplMode] = useState('relative')
+  const [filterType, setFilterType] = useState('all')
   const valorInputRef = useRef(null)
 
   const handleAdd = useCallback(() => {
@@ -95,6 +96,11 @@ const DataTable = memo(function DataTable({
         return a.tipo === 'Scope' ? -1 : 1
       })
   }, [entries, sprints])
+
+  const filteredEntries = useMemo(() => {
+    if (filterType === 'all') return displayEntries
+    return displayEntries.filter((e) => e.tipo === filterType)
+  }, [displayEntries, filterType])
 
   const isScope = (tipo) => tipo === 'Scope'
   const hasSprints = sprints.length > 0
@@ -252,6 +258,36 @@ const DataTable = memo(function DataTable({
         </div>
       )}
 
+      {/* ── Type Filter Bar ─────────────────────────────────────── */}
+      {entries.length > 0 && (
+        <div className="table-filter-bar">
+          <button
+            type="button"
+            className={`table-filter-btn ${filterType === 'all' ? 'table-filter-btn-active' : ''}`}
+            onClick={() => setFilterType('all')}
+            aria-label="Show all entries"
+          >
+            All ({entries.length})
+          </button>
+          <button
+            type="button"
+            className={`table-filter-btn table-filter-btn-scope ${filterType === 'Scope' ? 'table-filter-btn-active' : ''}`}
+            onClick={() => setFilterType('Scope')}
+            aria-label="Show only Scope entries"
+          >
+            Scope
+          </button>
+          <button
+            type="button"
+            className={`table-filter-btn table-filter-btn-completed ${filterType === 'Completed' ? 'table-filter-btn-active' : ''}`}
+            onClick={() => setFilterType('Completed')}
+            aria-label="Show only Completed entries"
+          >
+            Completed
+          </button>
+        </div>
+      )}
+
       {/* ── Table ────────────────────────────────────────────────── */}
       {entries.length > 0 && (
         <div className="table-scroll">
@@ -266,7 +302,7 @@ const DataTable = memo(function DataTable({
               </tr>
             </thead>
             <tbody>
-              {displayEntries.map((entry) => {
+              {filteredEntries.map((entry) => {
                 const scoped = isScope(entry.tipo)
                 const cumVal = sprintMap.get(entry.sprintId)?.[entry.tipo.toLowerCase()] ?? 0
                 const switchedTipo = scoped ? 'Completed' : 'Scope'

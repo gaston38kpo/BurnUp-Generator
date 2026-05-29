@@ -20,8 +20,8 @@ describe('DataTable', () => {
 
   it('renders the entry template form', () => {
     render(<DataTable {...baseProps} />)
-    expect(screen.getByText('Completed')).toBeInTheDocument()
-    expect(screen.getByText('Scope')).toBeInTheDocument()
+    expect(screen.getAllByText('Completed').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByText('Scope').length).toBeGreaterThanOrEqual(1)
     expect(screen.getByLabelText('New entry value')).toBeInTheDocument()
     expect(screen.getByLabelText('Add entry')).toBeInTheDocument()
   })
@@ -45,7 +45,8 @@ describe('DataTable', () => {
 
   it('toggles entry type between Completed and Scope', () => {
     render(<DataTable {...baseProps} />)
-    const scopeTab = screen.getByText('Scope')
+    // Pick the first Scope button (template tab, before filter bar)
+    const scopeTab = screen.getAllByText('Scope')[0]
     fireEvent.click(scopeTab)
     // The form mode should switch — Scope label should be active
     expect(scopeTab.closest('.tpl-type-tab')).toHaveClass('tpl-type-tab-active')

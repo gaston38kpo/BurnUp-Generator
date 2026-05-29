@@ -656,6 +656,7 @@
   letter-spacing: 0.02em;
   position: absolute;
   left: 50%;
+  top: -15px;
   transform: translateX(-50%);
 }
 
@@ -923,6 +924,61 @@
   margin: 0;
 }
 
+/* ─── Table Filter Bar ─────────────────────────────────────────── */
+
+.table-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 10px 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.table-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-dim);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  line-height: 1.3;
+
+  &:hover {
+    color: var(--text);
+    background: var(--bg-alt);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+}
+
+.table-filter-btn-active {
+  color: var(--text-h);
+  background: var(--bg-alt);
+  border-color: var(--border);
+}
+
+.table-filter-btn-scope.table-filter-btn-active {
+  color: var(--scope);
+  background: var(--scope-bg);
+  border-color: var(--scope-border);
+}
+
+.table-filter-btn-completed.table-filter-btn-active {
+  color: var(--completed);
+  background: var(--completed-bg);
+  border-color: var(--completed-border);
+}
+
 .table-scroll {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
@@ -1099,11 +1155,6 @@
   color: var(--text-dim);
   cursor: pointer;
   transition: all var(--transition-fast);
-  opacity: 0;
-
-  .data-table tbody tr:hover & {
-    opacity: 1;
-  }
 
   &:hover {
     color: var(--danger);
@@ -1210,7 +1261,7 @@
 .tpl-fields-row {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
+  gap: 24px;
   padding: 12px 14px;
   background: var(--bg);
 }
@@ -1249,6 +1300,10 @@
 }
 
 .tpl-field:first-child {
+  flex: 2 1 0;
+}
+
+.tpl-field:nth-child(3) {
   flex: 1 1 0;
 }
 
@@ -1261,7 +1316,7 @@
 }
 
 .tpl-value-input {
-  width: 80px;
+  width: 100%;
 }
 
 /* ─── Add Entry Button ──────────────────────────────────────────────────────── */
@@ -1304,6 +1359,27 @@
     outline: 2px solid var(--accent);
     outline-offset: 2px;
   }
+}
+
+/* Type-aware button coloring via parent template class */
+.tpl-scope .btn-add-entry {
+  background: var(--scope);
+  border-color: var(--scope);
+  color: #333;
+}
+
+.tpl-completed .btn-add-entry {
+  background: var(--completed);
+  border-color: var(--completed);
+  color: #333;
+}
+
+.tpl-scope .btn-add-entry:disabled,
+.tpl-completed .btn-add-entry:disabled {
+  background: transparent;
+  border-color: transparent;
+  color: white;
+  opacity: 0.35;
 }
 
 /* ─── Share Footer ──────────────────────────────────────────────────────────── */

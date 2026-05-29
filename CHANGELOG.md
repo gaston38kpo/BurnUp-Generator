@@ -6,9 +6,19 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/en/1.1.
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 (siguiendo [Conventional Commits](https://www.conventionalcommits.org/)).
 
-Soportamos **v0.6.0** y anteriores. Antes de v0.1.0 era prototipo sin versionar.
+Soportamos **v1.0.0** (estable) y anteriores.
 
 ---
+
+## [1.0.0] — 2026-05-29
+
+Versión estable inicial. La aplicación está funcional, deployada en GitHub Pages, y lista para uso público.
+
+### Cambios desde v0.6.0
+
+- Bump a 1.0.0: se declara estable la API pública y el estado actual del producto.
+- CHANGELOG.md creado con historial completo.
+- Ramas `desarrollo` y `master` eliminadas (obsoletas).
 
 ## [0.6.0] — 2026-05-29
 
@@ -129,6 +139,7 @@ Soportamos **v0.6.0** y anteriores. Antes de v0.1.0 era prototipo sin versionar.
 
 ---
 
+[1.0.0]: https://github.com/gaston38kpo/BurnUp-Generator/compare/v0.6.0...v1.0.0
 [0.6.0]: https://github.com/gaston38kpo/BurnUp-Generator/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/gaston38kpo/BurnUp-Generator/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/gaston38kpo/BurnUp-Generator/compare/v0.3.0...v0.4.0

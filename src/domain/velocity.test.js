@@ -35,8 +35,8 @@ describe('computeVelocity', () => {
     // s0 completed=5, s1 completed=5+7=12 (cumulative)
     // Delta s0 = 5, Delta s1 = 12-5 = 7, avg = 6
     expect(result.velocity).toBe(6)
-    // remaining = 20 - 12 = 8, forecast = ceil(8/6) = 2
-    expect(result.forecast).toBe(2)
+    // remaining = 20 - 12 = 8, estimate = ceil(8/6) = 2
+    expect(result.estimate).toBe(2)
     expect(result.remaining).toBe(8)
     expect(result.completedSprints).toBe(2)
     expect(result.totalDelta).toBe(12)
@@ -53,7 +53,7 @@ describe('computeVelocity', () => {
     const result = computeVelocity(...Object.values(buildInput(sprints, entries)))
 
     expect(result.velocity).toBe(0)
-    expect(result.forecast).toBeNull()
+    expect(result.estimate).toBeNull()
     expect(result.remaining).toBe(10)
     expect(result.completedSprints).toBe(0)
     expect(result.totalDelta).toBe(0)
@@ -69,13 +69,13 @@ describe('computeVelocity', () => {
 
     // Delta s0 = 5, avg = 5 / 1 = 5
     expect(result.velocity).toBe(5)
-    expect(result.forecast).toBe(1) // ceil(5/5) = 1
+    expect(result.estimate).toBe(1) // ceil(5/5) = 1
     expect(result.remaining).toBe(5)
     expect(result.completedSprints).toBe(1)
     expect(result.totalDelta).toBe(5)
   })
 
-  it('returns forecast zero when all work is completed', () => {
+  it('returns estimate zero when all work is completed', () => {
     const sprints = [sprint('s0', 'Sprint 0')]
     const entries = [
       entry('s0', 'Scope', 10, 'absolute'),
@@ -84,7 +84,7 @@ describe('computeVelocity', () => {
     const result = computeVelocity(...Object.values(buildInput(sprints, entries)))
 
     expect(result.velocity).toBe(10)
-    expect(result.forecast).toBe(0)
+    expect(result.estimate).toBe(0)
     expect(result.remaining).toBe(0)
     expect(result.completedSprints).toBe(1)
   })
@@ -107,9 +107,9 @@ describe('computeVelocity', () => {
     expect(result.velocity).toBe(7.5)
     expect(result.completedSprints).toBe(2)
     expect(result.totalDelta).toBe(15)
-    // remaining = 25 - 15 = 10, forecast = ceil(10/7.5) = 2
+    // remaining = 25 - 15 = 10, estimate = ceil(10/7.5) = 2
     expect(result.remaining).toBe(10)
-    expect(result.forecast).toBe(2)
+    expect(result.estimate).toBe(2)
   })
 
   it('guards against negative deltas', () => {

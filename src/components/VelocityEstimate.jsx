@@ -1,12 +1,12 @@
 /**
- * VelocityForecast.jsx — Velocity and forecast display component
+ * VelocityEstimate.jsx — Velocity and estimate display component
  *
  * Shows the average velocity (completed pts/sprint) and estimated
  * remaining sprints (forecast). Uses the same styling approach as StatsBar.
  */
 
-export default function VelocityForecast({ velocityInfo }) {
-  const { velocity, forecast, completedSprints } = velocityInfo
+export default function VelocityEstimate({ velocityInfo }) {
+  const { velocity, estimate, completedSprints } = velocityInfo
   const hasData = completedSprints > 0
 
   if (!hasData) {
@@ -35,9 +35,9 @@ export default function VelocityForecast({ velocityInfo }) {
         className="velocity-stat"
         title="Estimated sprints remaining at current velocity (remaining ÷ velocity)"
       >
-        <span className="velocity-stat-label">Forecast</span>
+        <span className="velocity-stat-label">Estimate</span>
         <span className="velocity-stat-value">
-          {forecast !== null ? `~${forecast} sprints` : '\u2014'}
+          {estimate !== null ? `~${estimate} sprints` : '\u2014'}
         </span>
       </div>
     </div>

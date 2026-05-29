@@ -58,7 +58,7 @@
 /**
  * @typedef {Object} VelocityInfo
  * @property {number}  velocity         - Average completed points per sprint (0 if no data)
- * @property {number|null} forecast     - Estimated remaining sprints (null if velocity is 0)
+ * @property {number|null} estimate     - Estimated remaining sprints (null if velocity is 0)
  * @property {number}  remaining        - Points remaining to complete
  * @property {number}  completedSprints - Number of sprints with Completed entries
  * @property {number}  totalDelta       - Sum of all completed deltas

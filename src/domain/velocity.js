@@ -13,7 +13,7 @@
  * @param {Map<string, {scope: number, completed: number}>} sprintMap - Cumulative values per sprint (ordered)
  * @param {Map<string, {valor: number, mode: string}>} entryBySprintTipo - Raw entry lookup by "sprintId|tipo"
  * @param {number} maxScope - Total scope (cumulative maximum across all sprints)
- * @returns {{ velocity: number, forecast: number|null, remaining: number, completedSprints: number, totalDelta: number }}
+ * @returns {{ velocity: number, estimate: number|null, remaining: number, completedSprints: number, totalDelta: number }}
  */
 export function computeVelocity(sprintMap, entryBySprintTipo, maxScope) {
   let previousCompleted = 0
@@ -41,10 +41,10 @@ export function computeVelocity(sprintMap, entryBySprintTipo, maxScope) {
   const lastCumulativeCompleted = lastId ? sprintMap.get(lastId).completed : 0
   const remaining = Math.max(0, maxScope - lastCumulativeCompleted)
 
-  let forecast = null
+  let estimate = null
   if (velocity > 0) {
-    forecast = remaining > 0 ? Math.ceil(remaining / velocity) : 0
+    estimate = remaining > 0 ? Math.ceil(remaining / velocity) : 0
   }
 
-  return { velocity, forecast, remaining, completedSprints, totalDelta }
+  return { velocity, estimate, remaining, completedSprints, totalDelta }
 }

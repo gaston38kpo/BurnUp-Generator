@@ -10,7 +10,7 @@
 import { useState, useRef, useCallback, useMemo } from "react";
 import BurnupChart from "./components/BurnupChart";
 import StatsBar from "./components/StatsBar";
-import VelocityForecast from "./components/VelocityForecast";
+import VelocityEstimate from "./components/VelocityEstimate";
 import DataTable from "./components/DataTable";
 import ShareFooter from "./components/ShareFooter";
 import Accordion from "./components/Accordion";
@@ -163,7 +163,7 @@ export default function App() {
             <StatsBar sprintMap={sprintMap} maxScope={maxScope} />
 
             {/* ── Velocity Forecast ──────────────────────────────────────────── */}
-            <VelocityForecast velocityInfo={velocityInfo} />
+            <VelocityEstimate velocityInfo={velocityInfo} />
 
             {/* ── Chart Zone ────────────────────────────────────────────────── */}
             <section className='card chart-card' ref={chartRef}>

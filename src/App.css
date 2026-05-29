@@ -1551,7 +1551,7 @@
 .velocity-stat-value {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  color: var(--accent);
+  color: var(--text);
 }
 
 .velocity-divider {

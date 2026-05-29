@@ -355,7 +355,7 @@
 
 .chart-controls {
   position: absolute;
-  top: -18px;
+  top: -15px;
   right: -11px;
   z-index: 10;
   display: flex;
@@ -652,8 +652,11 @@
   text-align: center;
   color: var(--text-dim);
   font-size: 12px;
-  margin: 4px 0 0;
+  margin: 0;
   letter-spacing: 0.02em;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 /* Custom legend */
@@ -787,6 +790,7 @@
   background: var(--border);
   border-radius: var(--radius-full);
   overflow: hidden;
+  margin-bottom: 12px;
 }
 
 .progress-fill {
@@ -808,7 +812,7 @@
 .stats-empty {
   font-size: 12px;
   color: var(--text-dim);
-  margin: 4px 0 0;
+  margin: 0;
   text-align: center;
 }
 
@@ -1518,6 +1522,53 @@
   }
 }
 
+/* ─── Velocity Forecast ──────────────────────────────────────────────────────── */
+
+.velocity-forecast {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 8px 4px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.velocity-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.velocity-stat-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-dim);
+}
+
+.velocity-stat-value {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+}
+
+.velocity-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+.velocity-empty {
+  font-size: 12px;
+  color: var(--text-dim);
+  text-align: center;
+  padding: 1px;
+  margin: 0;
+}
+
 /* ─── Responsive ────────────────────────────────────────────────────────────── */
 
 @media (max-width: 640px) {
@@ -1534,6 +1585,12 @@
   }
 
   .chart-card { padding: 12px 8px 8px; }
+
+  .chart-controls {
+    top: -8px;
+    right: -4px;
+    flex-direction: row;
+  }
 
   .data-table .col-sprint,
   .data-table .col-type { width: auto; }

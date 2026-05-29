@@ -10,7 +10,7 @@ export default defineConfig({
   test: {
     coverage: {
       provider: 'v8',
-      include: ['src/lib/**', 'src/components/**'],
+      include: ['src/lib/**', 'src/domain/**', 'src/components/**'],
       reporter: ['text', 'lcov', 'html'],
       thresholds: {
         statements: 90,
@@ -26,7 +26,7 @@ export default defineConfig({
         extends: true,
         test: {
           name: 'lib',
-          include: ['src/lib/**/*.test.{js,jsx}'],
+          include: ['src/lib/**/*.test.{js,jsx}', 'src/domain/**/*.test.{js,jsx}'],
           environment: 'node',
         },
       },

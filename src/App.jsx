@@ -10,12 +10,14 @@
 import { useState, useRef, useCallback, useMemo } from "react";
 import BurnupChart from "./components/BurnupChart";
 import StatsBar from "./components/StatsBar";
+import VelocityForecast from "./components/VelocityForecast";
 import DataTable from "./components/DataTable";
 import ShareFooter from "./components/ShareFooter";
 import Accordion from "./components/Accordion";
 import Header from "./components/Header";
 import { cssVarOverrides } from "./domain/colors";
-import { computeChartData } from "./domain/chartData";
+import { computeChartData, computeCumulatives } from "./domain/chartData";
+import { computeVelocity } from "./domain/velocity";
 import { decodeState, readUrlToken } from "./adapters/UrlStateAdapter";
 import useUndoRedo, { ACTION_TYPES, DEFAULT_STATE } from "./lib/useUndoRedo";
 import useInlineEdit from "./application/useInlineEdit";
@@ -120,6 +122,15 @@ export default function App() {
     [state.present.sprints, state.present.entries],
   )
 
+  const velocityInfo = useMemo(
+    () => {
+      const { sprintMap: velSprintMap, entryBySprintTipo, maxScope: velMaxScope } =
+        computeCumulatives(state.present.sprints, state.present.entries)
+      return computeVelocity(velSprintMap, entryBySprintTipo, velMaxScope)
+    },
+    [state.present.sprints, state.present.entries],
+  )
+
   const cssVars = useMemo(
     () => cssVarOverrides(
       state.present.chartConfig.scopeColor,
@@ -150,6 +161,9 @@ export default function App() {
 
             {/* ── Stats Bar ────────────────────────────────────────────────── */}
             <StatsBar sprintMap={sprintMap} maxScope={maxScope} />
+
+            {/* ── Velocity Forecast ──────────────────────────────────────────── */}
+            <VelocityForecast velocityInfo={velocityInfo} />
 
             {/* ── Chart Zone ────────────────────────────────────────────────── */}
             <section className='card chart-card' ref={chartRef}>

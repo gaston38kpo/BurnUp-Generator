@@ -52,6 +52,21 @@ describe('ShareFooter', () => {
     expect(onClear).not.toHaveBeenCalled()
   })
 
+  it('disables the clear button when disabled prop is true', () => {
+    render(<ShareFooter onClear={() => {}} disabled={true} />)
+    const footer = screen.getByRole('contentinfo')
+    const clearBtn = within(footer).getByRole('button', { name: /clear all data/i })
+    expect(clearBtn).toBeDisabled()
+  })
+
+  it('does not open confirm dialog when disabled and button is clicked', () => {
+    render(<ShareFooter onClear={() => {}} disabled={true} />)
+    const footer = screen.getByRole('contentinfo')
+    const clearBtn = within(footer).getByRole('button', { name: /clear all data/i })
+    fireEvent.click(clearBtn)
+    expect(screen.queryByText('Clear all data?')).not.toBeInTheDocument()
+  })
+
   it('shows toast notification on copy', async () => {
     render(<ShareFooter onClear={() => {}} />)
     const footer = screen.getByRole('contentinfo')

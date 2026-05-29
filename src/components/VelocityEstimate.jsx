@@ -12,9 +12,7 @@ export default function VelocityEstimate({ velocityInfo }) {
   if (!hasData) {
     return (
       <div className="velocity-forecast">
-        <p className="velocity-empty">
-          Add completed entries to calculate velocity and forecast
-        </p>
+        <p className="velocity-empty">-</p>
       </div>
     )
   }

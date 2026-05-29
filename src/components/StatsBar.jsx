@@ -62,7 +62,7 @@ export default function StatsBar({ sprintMap, maxScope }) {
       )}
 
       {!hasScope && (
-        <p className="stats-empty">Add scope and completed entries to see progress</p>
+        <p className="stats-empty">-</p>
       )}
     </div>
   )

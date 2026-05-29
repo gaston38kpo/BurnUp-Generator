@@ -10,7 +10,7 @@
 import { useState } from 'react'
 import { ChevronDown } from '../assets/icons'
 
-export default function Accordion({ title, badge, defaultOpen = false, padded = true, children }) {
+export default function Accordion({ title, badge, defaultOpen = true, padded = true, children }) {
   const [open, setOpen] = useState(defaultOpen)
 
   return (

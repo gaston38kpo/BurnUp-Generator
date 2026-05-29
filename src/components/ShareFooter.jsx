@@ -10,7 +10,7 @@
 import { useState, useCallback } from 'react'
 import { CopySmIcon, DeleteAllIcon } from '../assets/icons'
 
-export default function ShareFooter({ onClear }) {
+export default function ShareFooter({ onClear, disabled = false }) {
   const [toast, setToast] = useState('')
   const [confirmClear, setConfirmClear] = useState(false)
 
@@ -50,7 +50,7 @@ export default function ShareFooter({ onClear }) {
           <CopySmIcon />
         </button>
         <div className="clear-wrapper">
-          <button className="btn-icon btn-icon-danger" onClick={() => setConfirmClear(true)} title="Clear all data">
+          <button className="btn-icon btn-icon-danger" onClick={() => !disabled && setConfirmClear(true)} disabled={disabled} title="Clear all data">
         <DeleteAllIcon />
           </button>
           {confirmClear && (

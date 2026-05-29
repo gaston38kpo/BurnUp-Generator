@@ -1377,10 +1377,15 @@
 }
 
 .btn-icon-danger {
-  &:hover {
+  &:hover:not(:disabled) {
     background: var(--danger-bg);
     border-color: var(--danger-border);
     color: var(--danger);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
   }
 }
 

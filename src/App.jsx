@@ -84,6 +84,13 @@ export default function App() {
     const dateFromEdit = useInlineEdit();
     const dateToEdit = useInlineEdit();
 
+    // ─── Default-state detection ─────────────────────────────────────────────
+    const isDefault =
+      state.present.entries.length === 0 &&
+      state.present.title === '' &&
+      state.present.dateFrom === '' &&
+      state.present.dateTo === '';
+
     // ─── Entry mutation handlers ────────────────────────────────────────────
     const handleEntryAdd = useCallback((sprintId, tipo, valor, mode) => {
         if (!sprintId) return;
@@ -194,7 +201,7 @@ export default function App() {
             </Accordion>
 
             {/* ── Footer: Share ─────────────────────────────────────────────── */}
-            <ShareFooter onClear={handleClear} />
+            <ShareFooter onClear={handleClear} disabled={isDefault} />
         </div>
     );
 }

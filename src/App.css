@@ -304,7 +304,6 @@
 
 .chart-card {
   padding: 20px 16px 12px;
-  overflow: hidden;
 }
 
 /* ─── Shared Input Styles ───────────────────────────────────────────────────── */
@@ -647,7 +646,17 @@
   margin: 0;
 }
 
-/* Date range subtitle (visible in chart screenshots) */
+/* Editable date controls above the chart */
+.chart-date-edit-group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-bottom: 14px;
+  min-height: 24px;
+}
+
+/* Date range subtitle (visible in chart screenshots, legacy) */
 .chart-date-range {
   text-align: center;
   color: var(--text-dim);

@@ -3,6 +3,19 @@ import { render, screen } from '@testing-library/react'
 import BurnupChart from './BurnupChart'
 import { computeChartData } from '../lib/chartData'
 
+/** Inline-edit mock (closed state) */
+const mockEdit = {
+  editing: false,
+  draft: '',
+  setDraft: () => {},
+  ref: { current: null },
+  open: () => {},
+  commit: () => {},
+  cancel: () => {},
+  close: () => {},
+  handleKeyDown: () => {},
+}
+
 describe('BurnupChart', () => {
   const baseProps = {
     chartData: [],
@@ -11,6 +24,9 @@ describe('BurnupChart', () => {
     chartRef: { current: null },
     dateFrom: '',
     dateTo: '',
+    dateFromEdit: mockEdit,
+    dateToEdit: mockEdit,
+    dispatch: () => {},
   }
 
   it('shows empty state when no data', () => {
@@ -39,15 +55,18 @@ describe('BurnupChart', () => {
     expect(screen.getByLabelText('Copy chart as image')).toBeInTheDocument()
   })
 
-  it('displays date range when provided', () => {
+  it('displays editable date controls when dates provided', () => {
     const props = {
       ...baseProps,
       dateFrom: '2026-01-01',
       dateTo: '2026-12-31',
     }
     render(<BurnupChart {...props} />)
-    // Empty state also shows the date range
-    expect(screen.getByText(/2026/)).toBeInTheDocument()
+    // Two date-display buttons in the date-edit-group
+    const group = document.querySelector('.chart-date-edit-group')
+    expect(group).toBeInTheDocument()
+    expect(group).toHaveTextContent(/1 de ene/)
+    expect(group).toHaveTextContent(/31 de dic/)
   })
 
   it('shows control buttons in empty state', () => {

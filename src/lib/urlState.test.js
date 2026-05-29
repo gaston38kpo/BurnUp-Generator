@@ -255,6 +255,56 @@ describe('encodeState edge cases', () => {
   })
 })
 
+// ─── showDates encoding / decoding ────────────────────────────────────────────
+
+describe('showDates encoding and decoding', () => {
+  it('encodes and decodes showDates=true', () => {
+    const state = {
+      ...MINIMAL_STATE,
+      chartConfig: { ...MINIMAL_STATE.chartConfig, showDates: true },
+    }
+    const decoded = decodeState(encodeState(state))
+    expect(decoded.chartConfig.showDates).toBe(true)
+  })
+
+  it('encodes and decodes showDates=false', () => {
+    const state = {
+      ...MINIMAL_STATE,
+      chartConfig: { ...MINIMAL_STATE.chartConfig, showDates: false },
+    }
+    const decoded = decodeState(encodeState(state))
+    expect(decoded.chartConfig.showDates).toBe(false)
+  })
+
+  it('encodes and decodes showDates=undefined (default shown)', () => {
+    const state = {
+      ...MINIMAL_STATE,
+      chartConfig: { ...MINIMAL_STATE.chartConfig }, // no showDates
+    }
+    const decoded = decodeState(encodeState(state))
+    // undefined → compact encodes as 1 (showDates !== false), so decode returns true
+    expect(decoded.chartConfig.showDates).toBe(true)
+  })
+
+  it('backward compat: decode v6 URL without showDates → showDates is undefined', () => {
+    // Craft v6 compact without the showDates field at i+8
+    // [6, title, dateFrom, dateTo, sprintOffset, sprintNames..., null, entries..., null, chartConfig... (only up to i+7 = showTrendLine)]
+    const compact = [
+      6, 'Backward', '2026-01-01', '2026-01-31', 0,
+      'Sprint 0', null, // sprints
+      0, 10, 0, 0, // entries
+      null, // chartConfig sentinel
+      0, 0, 1, 1, '#75AADB', '#FCBF49', '#FFFFFF', 0, // only 8 chartConfig items (no showDates at i+8)
+    ]
+    const compressed = pako.deflate(JSON.stringify(compact), { level: 9 })
+    const binary = String.fromCharCode(...compressed)
+    const token = btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+
+    const decoded = decodeState(token)
+    expect(decoded.chartConfig.showDates).toBeUndefined()
+  })
+})
+
 // ─── readUrlToken (node environment — no window) ─────────────────────────────
 
 describe('readUrlToken', () => {

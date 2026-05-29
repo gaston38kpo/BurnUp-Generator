@@ -160,8 +160,6 @@ export default function App() {
               canRedo={canRedo}
               sprintEdit={sprintEdit}
               offsetEdit={offsetEdit}
-              dateFromEdit={dateFromEdit}
-              dateToEdit={dateToEdit}
               v1Error={v1Error}
               onDismissV1Error={() => setV1Error(false)}
               onClear={handleClear}
@@ -183,6 +181,9 @@ export default function App() {
                 chartRef={chartRef}
                 dateFrom={state.present.dateFrom}
                 dateTo={state.present.dateTo}
+                dateFromEdit={dateFromEdit}
+                dateToEdit={dateToEdit}
+                dispatch={dispatch}
               />
             </section>
 

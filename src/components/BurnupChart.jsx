@@ -22,6 +22,7 @@ import {
 } from "recharts";
 import { memo } from "react";
 import { formatDate } from "../lib/formatDate.js";
+import { ACTION_TYPES } from "../lib/useUndoRedo";
 import ChartSettings from "./ChartSettings";
 import ChartCopyButton from "./ChartCopyButton";
 
@@ -70,6 +71,66 @@ function CustomTooltip({ active, payload, label }) {
     );
 }
 
+/**
+ * DateControls — Click-to-edit date range picker
+ *
+ * Same pattern as the old Header dates: displays formatted date as a button,
+ * clicking opens a native date input.
+ */
+function DateControls({ dateFrom, dateTo, dateFromEdit, dateToEdit, dispatch }) {
+  return (
+    <>
+      {dateFromEdit.editing ? (
+        <input
+          ref={dateFromEdit.ref}
+          type='date'
+          className='date-input-inline'
+          value={dateFrom}
+          onChange={(e) =>
+            dispatch({ type: ACTION_TYPES.SET_DATE_FROM, payload: e.target.value })
+          }
+          onBlur={dateFromEdit.close}
+          onKeyDown={dateFromEdit.handleKeyDown}
+          aria-label='Start date'
+          max='2200-12-31'
+        />
+      ) : (
+        <button
+          className='date-display'
+          onClick={dateFromEdit.open}
+          title='Click to edit start date'
+        >
+          {formatDate(dateFrom) || "No start date"}
+        </button>
+      )}
+      <span className='date-arrow'>→</span>
+      {dateToEdit.editing ? (
+        <input
+          ref={dateToEdit.ref}
+          type='date'
+          className='date-input-inline'
+          value={dateTo}
+          onChange={(e) =>
+            dispatch({ type: ACTION_TYPES.SET_DATE_TO, payload: e.target.value })
+          }
+          onBlur={dateToEdit.close}
+          onKeyDown={dateToEdit.handleKeyDown}
+          aria-label='End date'
+          max='2200-12-31'
+        />
+      ) : (
+        <button
+          className='date-display'
+          onClick={dateToEdit.open}
+          title='Click to edit end date'
+        >
+          {formatDate(dateTo) || "No end date"}
+        </button>
+      )}
+    </>
+  );
+}
+
 const BurnupChart = memo(function BurnupChart({
   chartData,
   chartConfig,
@@ -77,14 +138,13 @@ const BurnupChart = memo(function BurnupChart({
   chartRef,
   dateFrom,
   dateTo,
+  dateFromEdit,
+  dateToEdit,
+  dispatch,
 }) {
     const idealColor = chartConfig.idealColor || "var(--ideal)";
 
   const hasData = chartData.length > 0;
-
-  const fromDate = formatDate(dateFrom);
-  const toDate = formatDate(dateTo);
-  const hasDateRange = fromDate || toDate;
 
   if (!hasData) {
         return (
@@ -144,11 +204,17 @@ const BurnupChart = memo(function BurnupChart({
         />
         <ChartCopyButton chartRef={chartRef} />
       </div>
-      {hasDateRange && (
-        <p className='chart-date-range'>
-          {fromDate}{fromDate && toDate ? ' → ' : ''}{toDate}
-        </p>
-      )}
+        {chartConfig.showDates !== false && (
+          <div className='chart-date-edit-group'>
+            <DateControls
+              dateFrom={dateFrom}
+              dateTo={dateTo}
+              dateFromEdit={dateFromEdit}
+              dateToEdit={dateToEdit}
+              dispatch={dispatch}
+            />
+          </div>
+        )}
         </div>
     );
   }
@@ -162,11 +228,17 @@ const BurnupChart = memo(function BurnupChart({
         />
         <ChartCopyButton chartRef={chartRef} />
       </div>
-      {hasDateRange && (
-        <p className='chart-date-range'>
-          {fromDate}{fromDate && toDate ? ' → ' : ''}{toDate}
-        </p>
-      )}
+        {chartConfig.showDates !== false && (
+          <div className='chart-date-edit-group'>
+            <DateControls
+              dateFrom={dateFrom}
+              dateTo={dateTo}
+              dateFromEdit={dateFromEdit}
+              dateToEdit={dateToEdit}
+              dispatch={dispatch}
+            />
+          </div>
+        )}
       <ResponsiveContainer width='100%' height={400}>
                 <ComposedChart
                     data={chartData}

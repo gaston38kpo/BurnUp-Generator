@@ -1,12 +1,12 @@
 /**
  * Header.jsx — App header extracted from App.jsx
  *
- * Contains: logo, title input, undo/redo buttons, date range,
+ * Contains: logo, title input, undo/redo buttons,
  * sprint count badge, offset badge, and v1 error banner.
+ * Date editing moved to BurnupChart.jsx.
  */
 
 import { useState } from 'react';
-import { formatDate } from '../domain/formatDate';
 import { BurnupLogo, PencilIcon, DeleteAllIcon } from '../assets/icons';
 import { ACTION_TYPES } from '../lib/useUndoRedo';
 
@@ -19,8 +19,6 @@ export default function Header({
   canRedo,
   sprintEdit,
   offsetEdit,
-  dateFromEdit,
-  dateToEdit,
   v1Error,
   onDismissV1Error,
   onClear,
@@ -79,56 +77,7 @@ export default function Header({
         </div>
       </div>
       <div className='header-row-meta'>
-        <div className='meta-dates-group'>
-          {dateFromEdit.editing ? (
-            <input
-              ref={dateFromEdit.ref}
-              type='date'
-              className='date-input-inline'
-              value={state.dateFrom}
-              onChange={(e) =>
-                dispatch({ type: ACTION_TYPES.SET_DATE_FROM, payload: e.target.value })
-              }
-              onBlur={dateFromEdit.close}
-              onKeyDown={dateFromEdit.handleKeyDown}
-              aria-label='Start date'
-              max='2200-12-31'
-            />
-          ) : (
-            <button
-              className='date-display'
-              onClick={dateFromEdit.open}
-              title='Click to edit start date'
-            >
-              {formatDate(state.dateFrom) || "No start date"}
-            </button>
-          )}
-          <span className='date-arrow'>→</span>
-          {dateToEdit.editing ? (
-            <input
-              ref={dateToEdit.ref}
-              type='date'
-              className='date-input-inline'
-              value={state.dateTo}
-              onChange={(e) =>
-                dispatch({ type: ACTION_TYPES.SET_DATE_TO, payload: e.target.value })
-              }
-              onBlur={dateToEdit.close}
-              onKeyDown={dateToEdit.handleKeyDown}
-              aria-label='End date'
-              max='2200-12-31'
-            />
-          ) : (
-            <button
-              className='date-display'
-              onClick={dateToEdit.open}
-              title='Click to edit end date'
-            >
-              {formatDate(state.dateTo) || "No end date"}
-            </button>
-          )}
-        </div>
-      <div className='meta-badges-group'>
+        <div className='meta-badges-group'>
         {sprintEdit.editing ? (
           <input
             ref={sprintEdit.ref}

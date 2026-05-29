@@ -128,6 +128,18 @@ export default function ChartSettings({ chartConfig, onChartConfigChange }) {
                  </button>
               </div>
             </div>
+            <div className="chart-settings-section">
+              <span className="chart-settings-label">Dates</span>
+              <div className="chart-settings-row">
+                 <button
+                   className={`chart-settings-opt${config.showDates !== false ? ' chart-settings-opt-active' : ''}`}
+                   onClick={() => setDraftValue('showDates', !(config.showDates !== false))}
+                   title="Show or hide date controls on the chart"
+                 >
+                   {config.showDates !== false ? 'Enabled' : 'Disabled'}
+                 </button>
+              </div>
+            </div>
            <div className="chart-settings-actions">
             <button
               className="chart-settings-cancel"

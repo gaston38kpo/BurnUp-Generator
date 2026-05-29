@@ -33,6 +33,7 @@
  * @property {string}  completedColor - CSS color for completed line
  * @property {string}  idealColor     - CSS color for ideal line (empty = theme default)
  * @property {boolean} [showTrendLine] - Show regression trend line
+ * @property {boolean} [showDates] - Show date controls
  */
 
 /**

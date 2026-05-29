@@ -97,6 +97,7 @@ function stateToCompact(state) {
   compact.push(cc.completedColor || '#FCBF49')
   compact.push(cc.idealColor || '#FFFFFF')
   compact.push(cc.showTrendLine === true ? 1 : 0)
+  compact.push(cc.showDates !== false ? 1 : 0)
 
   return compact
 }
@@ -183,6 +184,9 @@ function compactToState(compact) {
     }
     if (i + 7 < compact.length) {
       chartConfig.showTrendLine = compact[i + 7] === 1
+    }
+    if (i + 8 < compact.length) {
+      chartConfig.showDates = compact[i + 8] === 1
     }
   }
 

@@ -85,4 +85,25 @@ describe('ChartSettings', () => {
     fireEvent.mouseDown(document.body)
     expect(screen.queryByText('Scope')).not.toBeInTheDocument()
   })
+
+  it('toggles Dates off and applies showDates=false', () => {
+    const onChange = vi.fn()
+    render(
+      <ChartSettings
+        chartConfig={defaultConfig}
+        onChartConfigChange={onChange}
+      />,
+    )
+    fireEvent.click(screen.getByLabelText('Chart settings'))
+    // Dates section exists and shows "Enabled" by default
+    const datesSection = screen.getByText('Dates').closest('.chart-settings-section')
+    const datesBtn = within(datesSection).getByText('Enabled')
+    expect(datesBtn).toHaveClass('chart-settings-opt-active')
+    // Toggle it
+    fireEvent.click(datesBtn)
+    fireEvent.click(screen.getByText('Apply'))
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({ showDates: false }),
+    )
+  })
 })

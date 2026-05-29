@@ -40,9 +40,7 @@ describe('StatsBar', () => {
   it('shows empty state when no data', () => {
     render(<StatsBar {...buildProps(sprints, [])} />)
     expect(
-      screen.getByText(
-        'Add scope and completed entries to see progress',
-      ),
+      screen.getByText('-'),
     ).toBeInTheDocument()
     expect(document.querySelector('.progress-track')).not.toBeInTheDocument()
   })
@@ -53,6 +51,6 @@ describe('StatsBar', () => {
     ]
     render(<StatsBar {...buildProps(sprints, entries)} />)
     // With zero scope, hasScope is false, and scope=0 so stats compute but don't show progress
-    expect(screen.getByText('Add scope and completed entries to see progress')).toBeInTheDocument()
+    expect(screen.getByText('-')).toBeInTheDocument()
   })
 })

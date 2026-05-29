@@ -9,7 +9,7 @@ describe('Accordion', () => {
   })
 
   it('toggles open/closed on click', () => {
-    render(<Accordion title="Toggle Me">content</Accordion>)
+    render(<Accordion title="Toggle Me" defaultOpen={false}>content</Accordion>)
     const btn = screen.getByRole('button')
     expect(btn).toHaveAttribute('aria-expanded', 'false')
     fireEvent.click(btn)
@@ -29,7 +29,7 @@ describe('Accordion', () => {
   })
 
   it('updates aria-expanded on toggle', () => {
-    render(<Accordion title="Aria">content</Accordion>)
+    render(<Accordion title="Aria" defaultOpen={false}>content</Accordion>)
     const btn = screen.getByRole('button')
     expect(btn).toHaveAttribute('aria-expanded', 'false')
     fireEvent.click(btn)

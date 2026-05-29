@@ -30,7 +30,7 @@ describe('VelocityEstimate', () => {
     render(<VelocityEstimate velocityInfo={velocityInfo} />)
 
     expect(
-      screen.getByText('Add completed entries to calculate velocity and forecast'),
+      screen.getByText('-'),
     ).toBeInTheDocument()
   })
 

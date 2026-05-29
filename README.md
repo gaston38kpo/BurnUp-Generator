@@ -47,7 +47,7 @@ Esta guía rápida explica las acciones básicas para que un usuario nuevo empie
 - **Añadir datos (Entradas de datos / `Data Entries`)**:
   - Abre el acordeón `Data Entries` para ver la tabla y el formulario de entrada (mini-form).
   - En el formulario selecciona `Scope` o `Completed` y el sprint al que pertenece la entrada.
-  - Elige el modo: `Δ Rel` (valor relativo / delta) o `= Abs` (valor absoluto / total acumulado).
+  - Elige el modo: `± Rel` (valor relativo / delta) o `= Abs` (valor absoluto / total acumulado).
   - Introduce los `Points` y pulsa `Add` (o presiona Enter) para añadir la entrada.
   - En la tabla puedes cambiar el sprint, alternar el tipo (si está permitido), cambiar modo, editar el valor (se guarda al salir del campo) o eliminar la fila con la X.
   - Nota: cada sprint puede tener como máximo una entrada `Scope` y una `Completed`; si intentas duplicar, el toggle quedará desactivado.

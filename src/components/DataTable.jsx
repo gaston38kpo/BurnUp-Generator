@@ -201,7 +201,7 @@ const DataTable = memo(function DataTable({
                 onClick={() => setTplMode('relative')}
                 title="Relative: value is a delta/increment"
               >
-                Δ Rel
+                ± Rel
               </button>
               <button
                 type="button"
@@ -337,7 +337,7 @@ const DataTable = memo(function DataTable({
                             }
                             title="Relative: value is a delta"
                           >
-                            Δ
+                            ±
                           </button>
                           <button
                             type="button"

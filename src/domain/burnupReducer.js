@@ -76,7 +76,16 @@ function appReducer(state, action) {
       }
       const key = keyMap[action.type]
       if (state[key] === action.payload) return state
-      return { ...state, [key]: action.payload }
+      const newState = { ...state, [key]: action.payload }
+      // If start > end, swap them
+      if (key === 'dateFrom' || key === 'dateTo') {
+        if (newState.dateFrom && newState.dateTo && newState.dateFrom > newState.dateTo) {
+          const tmp = newState.dateFrom
+          newState.dateFrom = newState.dateTo
+          newState.dateTo = tmp
+        }
+      }
+      return newState
     }
     case ACTION_TYPES.ADD_ENTRY: {
       const { sprintId, tipo, valor, mode } = action.payload

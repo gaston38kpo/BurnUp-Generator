@@ -8,11 +8,10 @@
  */
 
 import { useState, useCallback } from 'react'
-import { CopySmIcon, DeleteAllIcon } from '../assets/icons'
+import { CopySmIcon } from '../assets/icons'
 
-export default function ShareFooter({ onClear, disabled = false }) {
+export default function ShareFooter() {
   const [toast, setToast] = useState('')
-  const [confirmClear, setConfirmClear] = useState(false)
 
   const currentUrl = typeof window !== 'undefined' ? window.location.href : ''
 
@@ -49,18 +48,6 @@ export default function ShareFooter({ onClear, disabled = false }) {
         <button className="btn-icon" onClick={handleCopyUrl} title="Copy shareable link">
           <CopySmIcon />
         </button>
-        <div className="clear-wrapper">
-          <button className="btn-icon btn-icon-danger" onClick={() => !disabled && setConfirmClear(true)} disabled={disabled} title="Clear all data">
-        <DeleteAllIcon />
-          </button>
-          {confirmClear && (
-            <div className="confirm-dialog" onClick={(e) => e.stopPropagation()}>
-              <span>Clear all data?</span>
-              <button className="confirm-yes" onClick={() => { onClear(); setConfirmClear(false) }}>Yes</button>
-              <button className="confirm-no" onClick={() => setConfirmClear(false)}>No</button>
-            </div>
-          )}
-        </div>
       </div>
 
       {/* Toast notification */}

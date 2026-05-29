@@ -1398,7 +1398,7 @@
 
 .confirm-dialog {
   position: absolute;
-  bottom: calc(100% + 8px);
+  top: calc(100% + 8px);
   right: 0;
   display: flex;
   align-items: center;

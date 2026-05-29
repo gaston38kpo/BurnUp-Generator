@@ -5,8 +5,9 @@
  * sprint count badge, offset badge, and v1 error banner.
  */
 
+import { useState } from 'react';
 import { formatDate } from '../domain/formatDate';
-import { BurnupLogo, PencilIcon } from '../assets/icons';
+import { BurnupLogo, PencilIcon, DeleteAllIcon } from '../assets/icons';
 import { ACTION_TYPES } from '../lib/useUndoRedo';
 
 export default function Header({
@@ -22,7 +23,10 @@ export default function Header({
   dateToEdit,
   v1Error,
   onDismissV1Error,
+  onClear,
+  disabled,
 }) {
+  const [confirmClear, setConfirmClear] = useState(false);
   return (
     <header className='app-header'>
       <div className='header-row-primary'>
@@ -61,6 +65,18 @@ export default function Header({
             </svg>
           </button>
         </div>
+        <div className="clear-wrapper">
+          <button className="btn-icon btn-icon-danger" onClick={() => !disabled && setConfirmClear(true)} disabled={disabled} title="Clear all data">
+            <DeleteAllIcon />
+          </button>
+          {confirmClear && (
+            <div className="confirm-dialog" onClick={(e) => e.stopPropagation()}>
+              <span>Clear all data?</span>
+              <button className="confirm-yes" onClick={() => { onClear(); setConfirmClear(false) }}>Yes</button>
+              <button className="confirm-no" onClick={() => setConfirmClear(false)}>No</button>
+            </div>
+          )}
+        </div>
       </div>
       <div className='header-row-meta'>
         <div className='meta-dates-group'>
@@ -76,6 +92,7 @@ export default function Header({
               onBlur={dateFromEdit.close}
               onKeyDown={dateFromEdit.handleKeyDown}
               aria-label='Start date'
+              max='2200-12-31'
             />
           ) : (
             <button
@@ -99,6 +116,7 @@ export default function Header({
               onBlur={dateToEdit.close}
               onKeyDown={dateToEdit.handleKeyDown}
               aria-label='End date'
+              max='2200-12-31'
             />
           ) : (
             <button

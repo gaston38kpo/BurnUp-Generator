@@ -164,6 +164,8 @@ export default function App() {
               dateToEdit={dateToEdit}
               v1Error={v1Error}
               onDismissV1Error={() => setV1Error(false)}
+              onClear={handleClear}
+              disabled={isDefault}
             />
 
             {/* ── Stats Bar ────────────────────────────────────────────────── */}
@@ -201,7 +203,7 @@ export default function App() {
             </Accordion>
 
             {/* ── Footer: Share ─────────────────────────────────────────────── */}
-            <ShareFooter onClear={handleClear} disabled={isDefault} />
+            <ShareFooter />
         </div>
     );
 }

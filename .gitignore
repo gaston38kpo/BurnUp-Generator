@@ -35,3 +35,6 @@ Thumbs.db
 /coverage
 /.playwright-mcp
 /burnup-app-full.png
+/lighthouse-report.report.json
+/lighthouse-report.report.html
+/lighthouse-report.json

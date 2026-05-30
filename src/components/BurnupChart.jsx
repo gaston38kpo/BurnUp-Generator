@@ -312,6 +312,7 @@ const BurnupChart = memo(function BurnupChart({
                         tickLine={false}
                         axisLine={false}
                         tickMargin={8}
+                        interval={0}
                     />
 
                     <YAxis

@@ -33,20 +33,20 @@ describe('hexToRgb', () => {
 // ─── cssVarOverrides ──────────────────────────────────────────────────────────
 
 describe('cssVarOverrides', () => {
-  it('generates CSS with scope and completed colors', () => {
+  it('generates CSS with scope and completed colors (always dark)', () => {
     const css = cssVarOverrides('#75AADB', '#FCBF49', '')
 
     expect(css).toContain('--scope: #75AADB')
     expect(css).toContain('--completed: #FCBF49')
-    expect(css).toContain('--scope-bg: rgba(117, 170, 219, 0.08)')
-    expect(css).toContain('--completed-bg: rgba(252, 191, 73, 0.08)')
+    expect(css).toContain('--scope-bg: rgba(117, 170, 219, 0.1)')
+    expect(css).toContain('--completed-bg: rgba(252, 191, 73, 0.1)')
   })
 
-  it('includes ideal color when provided', () => {
+  it('includes ideal color when provided (always dark)', () => {
     const css = cssVarOverrides('#75AADB', '#FCBF49', '#000000')
 
     expect(css).toContain('--ideal: #000000')
-    expect(css).toContain('--ideal-bg: rgba(0, 0, 0, 0.08)')
+    expect(css).toContain('--ideal-bg: rgba(0, 0, 0, 0.1)')
   })
 
   it('omits ideal color when empty string', () => {
@@ -55,21 +55,18 @@ describe('cssVarOverrides', () => {
     expect(css).not.toContain('--ideal')
   })
 
-  it('includes dark mode overrides for scope and completed', () => {
+  it('uses dark opacities directly without media query', () => {
     const css = cssVarOverrides('#75AADB', '#FCBF49', '')
 
-    expect(css).toContain('@media (prefers-color-scheme: dark)')
+    expect(css).not.toContain('@media')
     expect(css).toContain('--scope-bg: rgba(117, 170, 219, 0.1)')
     expect(css).toContain('--completed-bg: rgba(252, 191, 73, 0.1)')
   })
 
-  it('includes ideal in dark mode when provided', () => {
+  it('includes ideal with dark opacity when provided', () => {
     const css = cssVarOverrides('#75AADB', '#FCBF49', '#FFFFFF')
 
-    // Light mode line
     expect(css).toContain('--ideal: #FFFFFF')
-    expect(css).toContain('--ideal-bg: rgba(255, 255, 255, 0.08)')
-    // Dark mode line
     expect(css).toContain('--ideal-bg: rgba(255, 255, 255, 0.1)')
   })
 

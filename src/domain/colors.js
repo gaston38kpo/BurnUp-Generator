@@ -17,29 +17,15 @@ function color(hex, opacity) {
 export function cssVarOverrides(scopeColor, completedColor, idealColor) {
   let out = `:root {\n`
   out += `  --scope: ${scopeColor || 'transparent'};\n`
-  out += `  --scope-bg: ${color(scopeColor, 0.08)};\n`
-  out += `  --scope-border: ${color(scopeColor, 0.25)};\n`
+  out += `  --scope-bg: ${color(scopeColor, 0.1)};\n`
+  out += `  --scope-border: ${color(scopeColor, 0.3)};\n`
   out += `  --completed: ${completedColor || 'transparent'};\n`
-  out += `  --completed-bg: ${color(completedColor, 0.08)};\n`
-  out += `  --completed-border: ${color(completedColor, 0.25)};\n`
+  out += `  --completed-bg: ${color(completedColor, 0.1)};\n`
+  out += `  --completed-border: ${color(completedColor, 0.3)};\n`
   if (idealColor) {
     out += `  --ideal: ${idealColor};\n`
-    out += `  --ideal-bg: ${color(idealColor, 0.08)};\n`
+    out += `  --ideal-bg: ${color(idealColor, 0.1)};\n`
   }
-  out += `}\n`
-  out += `@media (prefers-color-scheme: dark) {\n`
-  out += `  :root {\n`
-  out += `    --scope: ${scopeColor || 'transparent'};\n`
-  out += `    --scope-bg: ${color(scopeColor, 0.1)};\n`
-  out += `    --scope-border: ${color(scopeColor, 0.3)};\n`
-  out += `    --completed: ${completedColor || 'transparent'};\n`
-  out += `    --completed-bg: ${color(completedColor, 0.1)};\n`
-  out += `    --completed-border: ${color(completedColor, 0.3)};\n`
-  if (idealColor) {
-    out += `    --ideal: ${idealColor};\n`
-    out += `    --ideal-bg: ${color(idealColor, 0.1)};\n`
-  }
-  out += `  }\n`
   out += `}\n`
   return out
 }

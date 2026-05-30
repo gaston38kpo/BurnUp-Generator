@@ -26,15 +26,38 @@ import ChartCopyButton from "./ChartCopyButton";
  * Returns null to hide the first label when showFirstSprintLabel is false.
  * Exported for testing — pure function.
  */
-export function renderSprintTick(chartConfig) {
+export function renderSprintTick(chartConfig, totalCount) {
   return ({ x, y, payload, index }) => {
     if (index === 0 && chartConfig.showFirstSprintLabel === false) return null
+
+    let label = payload.value
+
+    if (totalCount > 30) {
+      // Progressive skip: each 20-sprint chunk past 30 increases the skip
+      const extra = totalCount - 31
+      const step = Math.floor(extra / 20) + 1
+      if (index % step !== 0) return null
+      // Use actual sprint number from the name (respects offset)
+      label = extractNumber(payload.value)
+    } else if (totalCount > 15) {
+      label = `S${extractNumber(payload.value)}`
+    }
+
     return (
       <text x={x} y={y} dy={8} fill="var(--text-dim)" fontSize={11} textAnchor="middle">
-        {payload.value}
+        {label}
       </text>
     )
   }
+}
+
+/**
+ * Extracts the trailing number from a sprint name like "Sprint 15".
+ * Falls back to the raw value if no number is found.
+ */
+function extractNumber(name) {
+  const m = String(name).match(/\d+$/)
+  return m ? m[0] : name
 }
 
 /**
@@ -308,7 +331,7 @@ const BurnupChart = memo(function BurnupChart({
 
                     <XAxis
                         dataKey='sprint'
-                        tick={renderSprintTick(chartConfig)}
+                        tick={renderSprintTick(chartConfig, chartData.length)}
                         tickLine={false}
                         axisLine={false}
                         tickMargin={8}

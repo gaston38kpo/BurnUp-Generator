@@ -119,7 +119,7 @@ function appReducer(state, action) {
       return { ...state, entries: state.entries.filter((e) => e.id !== id) }
     }
     case ACTION_TYPES.SET_SPRINT_OFFSET: {
-      const offset = Math.max(0, Number(action.payload) || 0)
+      const offset = Math.min(100000, Math.max(0, Number(action.payload) || 0))
       if (state.sprintOffset === offset) return state
       return {
         ...state,
@@ -128,7 +128,7 @@ function appReducer(state, action) {
       }
     }
     case ACTION_TYPES.SET_SPRINT_COUNT: {
-      const count = Math.max(1, Number(action.payload) || 1)
+      const count = Math.min(400, Math.max(1, Number(action.payload) || 1))
       const currentCount = state.sprints.length - 1
       if (count === currentCount) return state
       if (count > currentCount) {

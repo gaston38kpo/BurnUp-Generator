@@ -10,6 +10,12 @@ Soportamos **v1.0.0** (estable) y anteriores.
 
 ---
 
+## [1.1.0] — 2026-05-29
+
+### Added
+
+- **DataTable Pagination**: paginación de entradas con 10 items por página, navegación Previous/Next, info "Showing X–Y of Z entries", reseteo al cambiar filtro, y ajuste automático al reducir entradas. Accesible con aria-labels y aria-live.
+
 ## [1.0.0] — 2026-05-29
 
 Versión estable inicial. La aplicación está funcional, deployada en GitHub Pages, y lista para uso público.

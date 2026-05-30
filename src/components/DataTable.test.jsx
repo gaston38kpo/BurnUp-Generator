@@ -97,4 +97,106 @@ describe('DataTable', () => {
     fireEvent.click(deleteBtn)
     expect(props.onEntryDelete).toHaveBeenCalledWith('e1')
   })
+
+  describe('pagination', () => {
+    function makeEntries(count) {
+      return Array.from({ length: count }, (_, i) => ({
+        id: `e${i}`,
+        sprintId: 's0',
+        tipo: i < Math.ceil(count / 2) ? 'Scope' : 'Completed',
+        valor: 10 + i,
+        mode: 'relative',
+      }))
+    }
+
+    function renderWithEntryCount(count) {
+      const entries = makeEntries(count)
+      const { sprintMap } = computeCumulatives(sprints, entries)
+      return {
+        entries,
+        ...render(
+          <DataTable
+            sprints={sprints}
+            entries={entries}
+            sprintMap={sprintMap}
+            onEntryChange={vi.fn()}
+            onEntryDelete={vi.fn()}
+            onEntryAdd={vi.fn()}
+          />
+        ),
+      }
+    }
+
+    it('shows first 10 of 25 entries with correct info text', () => {
+      renderWithEntryCount(25)
+      expect(screen.getByText('Showing 1–10 of 25 entries')).toBeInTheDocument()
+    })
+
+    it('navigates between pages with Next and Previous buttons', () => {
+      renderWithEntryCount(25)
+      expect(screen.getByText('Showing 1–10 of 25 entries')).toBeInTheDocument()
+
+      fireEvent.click(screen.getByRole('button', { name: 'Next page' }))
+      expect(screen.getByText('Showing 11–20 of 25 entries')).toBeInTheDocument()
+
+      fireEvent.click(screen.getByRole('button', { name: 'Previous page' }))
+      expect(screen.getByText('Showing 1–10 of 25 entries')).toBeInTheDocument()
+    })
+
+    it('disables Previous on first page and Next on last page', () => {
+      renderWithEntryCount(25)
+      expect(screen.getByRole('button', { name: 'Previous page' })).toBeDisabled()
+      expect(screen.getByRole('button', { name: 'Next page' })).not.toBeDisabled()
+
+      // Navigate to page 3 (last page)
+      fireEvent.click(screen.getByRole('button', { name: 'Next page' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Next page' }))
+      expect(screen.getByText('Showing 21–25 of 25 entries')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Next page' })).toBeDisabled()
+    })
+
+    it('resets to page 1 when filter type changes', () => {
+      renderWithEntryCount(25)
+
+      // Navigate to page 2
+      fireEvent.click(screen.getByRole('button', { name: 'Next page' }))
+      expect(screen.getByText('Showing 11–20 of 25 entries')).toBeInTheDocument()
+
+      // Click Scope filter — filters to 13 entries (still > 10, so pagination visible)
+      fireEvent.click(screen.getByRole('button', { name: 'Show only Scope entries' }))
+      expect(screen.getByText('Showing 1–10 of 13 entries')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Previous page' })).toBeDisabled()
+    })
+
+    it('clamps to page 1 when entries shrink below current offset', () => {
+      const { rerender } = renderWithEntryCount(12)
+
+      // Go to page 2
+      fireEvent.click(screen.getByRole('button', { name: 'Next page' }))
+      expect(screen.getByText('Showing 11–12 of 12 entries')).toBeInTheDocument()
+
+      // Rerender with only 8 entries (simulating deletion)
+      const fewerEntries = makeEntries(8)
+      const { sprintMap } = computeCumulatives(sprints, fewerEntries)
+      rerender(
+        <DataTable
+          sprints={sprints}
+          entries={fewerEntries}
+          sprintMap={sprintMap}
+          onEntryChange={vi.fn()}
+          onEntryDelete={vi.fn()}
+          onEntryAdd={vi.fn()}
+        />
+      )
+
+      // Pagination should not render (8 < 10), proving page was clamped to 1
+      expect(screen.queryByRole('button', { name: 'Previous page' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: 'Next page' })).not.toBeInTheDocument()
+      expect(screen.queryByText(/Showing/)).not.toBeInTheDocument()
+
+      // All 8 entries should be visible (empty if page stayed at 2)
+      const rows = document.querySelector('.data-table').querySelectorAll('tbody tr')
+      expect(rows).toHaveLength(8)
+    })
+  })
 })

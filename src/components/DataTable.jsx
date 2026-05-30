@@ -68,6 +68,8 @@ const DataTable = memo(function DataTable({
   const [tplValor, setTplValor] = useState('')
   const [tplMode, setTplMode] = useState('relative')
   const [filterType, setFilterType] = useState('all')
+  const PAGE_SIZE = 10
+  const [page, setPage] = useState(1)
   const valorInputRef = useRef(null)
 
   const handleAdd = useCallback(() => {
@@ -101,6 +103,29 @@ const DataTable = memo(function DataTable({
     if (filterType === 'all') return displayEntries
     return displayEntries.filter((e) => e.tipo === filterType)
   }, [displayEntries, filterType])
+
+  const totalPages = Math.ceil(filteredEntries.length / PAGE_SIZE) || 1
+
+  const paginatedEntries = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE
+    return filteredEntries.slice(start, start + PAGE_SIZE)
+  }, [filteredEntries, page])
+
+  const pageStart = (page - 1) * PAGE_SIZE
+  const pageEnd = Math.min(pageStart + PAGE_SIZE, filteredEntries.length)
+
+  // Reset page when filter type changes
+  useEffect(() => {
+    setPage(1)
+  }, [filterType])
+
+  // Clamp page when entries shrink below current offset
+  useEffect(() => {
+    setPage(prev => {
+      const max = Math.ceil(filteredEntries.length / PAGE_SIZE) || 1
+      return prev > max ? max : prev
+    })
+  }, [filteredEntries.length])
 
   const isScope = (tipo) => tipo === 'Scope'
   const hasSprints = sprints.length > 0
@@ -288,6 +313,33 @@ const DataTable = memo(function DataTable({
         </div>
       )}
 
+      {/* ── Pagination ──────────────────────────────────────── */}
+      {entries.length > 0 && filteredEntries.length > PAGE_SIZE && (
+        <div className="table-pagination">
+          <button
+            type="button"
+            className="pagination-btn"
+            aria-label="Previous page"
+            disabled={page === 1}
+            onClick={() => setPage(p => p - 1)}
+          >
+            Previous
+          </button>
+          <span className="pagination-info" role="status" aria-live="polite">
+            Showing {pageStart + 1}–{pageEnd} of {filteredEntries.length} entries
+          </span>
+          <button
+            type="button"
+            className="pagination-btn"
+            aria-label="Next page"
+            disabled={page === totalPages}
+            onClick={() => setPage(p => p + 1)}
+          >
+            Next
+          </button>
+        </div>
+      )}
+
       {/* ── Table ────────────────────────────────────────────────── */}
       {entries.length > 0 && (
         <div className="table-scroll">
@@ -302,7 +354,7 @@ const DataTable = memo(function DataTable({
               </tr>
             </thead>
             <tbody>
-              {filteredEntries.map((entry) => {
+              {paginatedEntries.map((entry) => {
                 const scoped = isScope(entry.tipo)
                 const cumVal = sprintMap.get(entry.sprintId)?.[entry.tipo.toLowerCase()] ?? 0
                 const switchedTipo = scoped ? 'Completed' : 'Scope'

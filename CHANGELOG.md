@@ -10,6 +10,12 @@ Soportamos **v1.0.0** (estable) y anteriores.
 
 ---
 
+## [1.2.0] — 2026-05-30
+
+### Added
+
+- **First Sprint Label Toggle**: nueva opción en Chart Settings para ocultar o mostrar la etiqueta del primer sprint en el eje X del gráfico. Desactivar "First Sprint" limpia la visualización cuando hay muchos sprints.
+
 ## [1.1.0] — 2026-05-29
 
 ### Added

@@ -1,12 +1,7 @@
 /**
  * BurnupChart.jsx — Sprint-based burnup visualization
  *
- * Renders a burnup chart with three lines + area fills:
- *   1. Scope (accumulated per sprint) — solid indigo line + gradient fill
- *   2. Completed (accumulated per sprint) — solid emerald line + gradient fill
- *   3. Ideal (linear reference) — dashed gray line
- *
- * One data point per sprint. Sprint names are X-axis labels.
+ * Exports: BurnupChart (default), renderSprintTick (pure function for testing)
  */
 
 import {
@@ -25,6 +20,22 @@ import { formatDate } from "../lib/formatDate.js";
 import { ACTION_TYPES } from "../lib/useUndoRedo";
 import ChartSettings from "./ChartSettings";
 import ChartCopyButton from "./ChartCopyButton";
+
+/**
+ * Pure tick renderer for the XAxis sprint labels.
+ * Returns null to hide the first label when showFirstSprintLabel is false.
+ * Exported for testing — pure function.
+ */
+export function renderSprintTick(chartConfig) {
+  return ({ x, y, payload, index }) => {
+    if (index === 0 && chartConfig.showFirstSprintLabel === false) return null
+    return (
+      <text x={x} y={y} dy={8} fill="var(--text-dim)" fontSize={11} textAnchor="middle">
+        {payload.value}
+      </text>
+    )
+  }
+}
 
 /**
  * Custom legend with colored dots matching line colors.
@@ -297,7 +308,7 @@ const BurnupChart = memo(function BurnupChart({
 
                     <XAxis
                         dataKey='sprint'
-                        tick={{ fontSize: 11, fill: "var(--text-dim)" }}
+                        tick={renderSprintTick(chartConfig)}
                         tickLine={false}
                         axisLine={false}
                         tickMargin={8}

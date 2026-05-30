@@ -57,6 +57,7 @@ export const DEFAULT_STATE = {
     scopeColor: '#75AADB',
     completedColor: '#FCBF49',
     idealColor: '',
+    showFirstSprintLabel: true,
   },
 }
 

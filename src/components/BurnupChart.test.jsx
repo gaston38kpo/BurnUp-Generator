@@ -1,7 +1,18 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import BurnupChart from './BurnupChart'
+import BurnupChart, { renderSprintTick } from './BurnupChart'
 import { computeChartData } from '../lib/chartData'
+
+/**
+ * Helper to invoke the tick renderer and return the tick text.
+ * Returns null when the tick is hidden, or the text string when visible.
+ */
+function renderTick(config, { value, index }) {
+  const tickFn = renderSprintTick(config)
+  const result = tickFn({ x: 0, y: 0, payload: { value }, index })
+  if (result === null) return null
+  return result.props.children
+}
 
 /** Inline-edit mock (closed state) */
 const mockEdit = {
@@ -67,6 +78,21 @@ describe('BurnupChart', () => {
     expect(group).toBeInTheDocument()
     expect(group).toHaveTextContent(/1 de ene/)
     expect(group).toHaveTextContent(/31 de dic/)
+  })
+
+  it('hides the first sprint label when showFirstSprintLabel is false', () => {
+    expect(renderTick({ showFirstSprintLabel: false }, { value: 'Sprint 1', index: 0 })).toBeNull()
+    expect(renderTick({ showFirstSprintLabel: false }, { value: 'Sprint 2', index: 1 })).toBe('Sprint 2')
+  })
+
+  it('shows the first sprint label by default (no config)', () => {
+    expect(renderTick({}, { value: 'Sprint 1', index: 0 })).toBe('Sprint 1')
+    expect(renderTick({}, { value: 'Sprint 2', index: 1 })).toBe('Sprint 2')
+  })
+
+  it('shows the first sprint label when showFirstSprintLabel is true', () => {
+    expect(renderTick({ showFirstSprintLabel: true }, { value: 'Sprint 1', index: 0 })).toBe('Sprint 1')
+    expect(renderTick({ showFirstSprintLabel: true }, { value: 'Sprint 2', index: 1 })).toBe('Sprint 2')
   })
 
   it('shows control buttons in empty state', () => {

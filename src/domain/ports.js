@@ -34,6 +34,7 @@
  * @property {string}  idealColor     - CSS color for ideal line (empty = theme default)
  * @property {boolean} [showTrendLine] - Show regression trend line
  * @property {boolean} [showDates] - Show date controls
+ * @property {boolean} [showFirstSprintLabel] - Show first sprint label on X-axis
  */
 
 /**

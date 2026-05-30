@@ -86,6 +86,27 @@ describe('ChartSettings', () => {
     expect(screen.queryByText('Scope')).not.toBeInTheDocument()
   })
 
+  it('toggles First Sprint off and applies showFirstSprintLabel=false', () => {
+    const onChange = vi.fn()
+    render(
+      <ChartSettings
+        chartConfig={defaultConfig}
+        onChartConfigChange={onChange}
+      />,
+    )
+    fireEvent.click(screen.getByLabelText('Chart settings'))
+    // First Sprint section exists and shows "Enabled" by default
+    const firstSprintSection = screen.getByText('First Sprint').closest('.chart-settings-section')
+    const firstSprintBtn = within(firstSprintSection).getByText('Enabled')
+    expect(firstSprintBtn).toHaveClass('chart-settings-opt-active')
+    // Toggle it
+    fireEvent.click(firstSprintBtn)
+    fireEvent.click(screen.getByText('Apply'))
+    expect(onChange).toHaveBeenCalledWith(
+      expect.objectContaining({ showFirstSprintLabel: false }),
+    )
+  })
+
   it('toggles Dates off and applies showDates=false', () => {
     const onChange = vi.fn()
     render(

@@ -140,7 +140,19 @@ export default function ChartSettings({ chartConfig, onChartConfigChange }) {
                  </button>
               </div>
             </div>
-           <div className="chart-settings-actions">
+            <div className="chart-settings-section">
+              <span className="chart-settings-label">First Sprint</span>
+              <div className="chart-settings-row">
+                 <button
+                   className={`chart-settings-opt${config.showFirstSprintLabel !== false ? ' chart-settings-opt-active' : ''}`}
+                   onClick={() => setDraftValue('showFirstSprintLabel', !(config.showFirstSprintLabel !== false))}
+                   title="Show or hide the first sprint label on the X-axis"
+                 >
+                   {config.showFirstSprintLabel !== false ? 'Enabled' : 'Disabled'}
+                 </button>
+              </div>
+            </div>
+            <div className="chart-settings-actions">
             <button
               className="chart-settings-cancel"
               onClick={handleCancel}

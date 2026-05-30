@@ -16,8 +16,8 @@ import {
     ResponsiveContainer,
 } from "recharts";
 import { memo } from "react";
-import { formatDate } from "../lib/formatDate.js";
-import { ACTION_TYPES } from "../lib/useUndoRedo";
+import { formatDate } from "../domain/formatDate.js";
+import { ACTION_TYPES } from "../application/useUndoRedo";
 import ChartSettings from "./ChartSettings";
 import ChartCopyButton from "./ChartCopyButton";
 

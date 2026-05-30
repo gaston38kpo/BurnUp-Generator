@@ -8,7 +8,7 @@
 
 import { useState } from 'react';
 import { BurnupLogo, PencilIcon, DeleteAllIcon } from '../assets/icons';
-import { ACTION_TYPES } from '../lib/useUndoRedo';
+import { ACTION_TYPES } from '../application/useUndoRedo';
 
 export default function Header({
   state,

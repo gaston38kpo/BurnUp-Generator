@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import pako from 'pako'
-import { encodeState, decodeState, readUrlToken } from './urlState'
+import { encodeState, decodeState, readUrlToken } from './UrlStateAdapter.js'
 
 // ─── Sample state fixtures ────────────────────────────────────────────────────
 

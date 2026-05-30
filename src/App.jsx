@@ -19,7 +19,7 @@ import { cssVarOverrides } from "./domain/colors";
 import { computeChartData, computeCumulatives } from "./domain/chartData";
 import { computeVelocity } from "./domain/velocity";
 import { decodeState, readUrlToken } from "./adapters/UrlStateAdapter";
-import useUndoRedo, { ACTION_TYPES, DEFAULT_STATE } from "./lib/useUndoRedo";
+import useUndoRedo, { ACTION_TYPES, DEFAULT_STATE } from "./application/useUndoRedo";
 import useInlineEdit from "./application/useInlineEdit";
 import useUrlSync from "./application/useUrlSync";
 import useKeyboardShortcuts from "./application/useKeyboardShortcuts";

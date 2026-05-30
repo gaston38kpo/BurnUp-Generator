@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import StatsBar from './StatsBar'
-import { computeCumulatives } from '../lib/chartData'
+import { computeCumulatives } from '../domain/chartData'
 
 function buildProps(sprints, entries) {
   const { sprintMap, maxScope } = computeCumulatives(sprints, entries)

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import BurnupChart, { renderSprintTick } from './BurnupChart'
-import { computeChartData } from '../lib/chartData'
+import { computeChartData } from '../domain/chartData'
 
 /**
  * Helper to invoke the tick renderer and return the tick text.

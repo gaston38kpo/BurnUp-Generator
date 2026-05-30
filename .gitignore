@@ -33,3 +33,5 @@ Thumbs.db
 
 .atl
 /coverage
+/.playwright-mcp
+/burnup-app-full.png

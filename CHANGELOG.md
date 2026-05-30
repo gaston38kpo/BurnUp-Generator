@@ -10,6 +10,12 @@ Soportamos **v1.0.0** (estable) y anteriores.
 
 ---
 
+## [1.3.0] — 2026-05-29
+
+### Changed
+
+- **ChartSettings UI/UX**: rediseño completo del popover de ajustes. Reemplazo de botones "Enabled"/"Disabled" por toggle switches con `role="switch"` y `aria-checked`. Configuraciones agrupadas en secciones "Line Styles" (Scope/Completed/Ideal) y "Display" (Trend Line/Dates/First Sprint). Título "Chart Settings" en el popover. Color swatches ampliados a 24x24 con efecto `scale` al hover. Popover más ancho (240px min-width).
+
 ## [1.2.0] — 2026-05-30
 
 ### Added

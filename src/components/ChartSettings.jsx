@@ -2,7 +2,8 @@
  * ChartSettings.jsx — Gear button popover for chart line type configuration
  *
  * Shows a small gear icon in the top-right of the chart.
- * On click, opens a popover with per-line settings for Scope, Completed and Ideal.
+ * On click, opens a popover with per-line settings for Scope, Completed and Ideal,
+ * plus display toggles (Trend Line, Dates, First Sprint).
  * Changes are kept in a local draft until the user clicks "Apply",
  * so the chart only updates when the user explicitly confirms.
  */
@@ -13,6 +14,42 @@ const LINE_TYPES = [
   { value: 'linear', label: 'Linear', desc: 'Smooth line' },
   { value: 'stepAfter', label: 'Step', desc: 'Step function' },
 ]
+
+/**
+ * ToggleSwitch — Accessible switch component
+ *
+ * Uses role="switch" + aria-checked for proper a11y.
+ * Renders a visual toggle track + thumb with smooth transitions.
+ */
+function ToggleSwitch({ id, label, checked, onChange }) {
+  return (
+    <div className="toggle-switch-row">
+      <span className="toggle-switch-label" id={`${id}-label`}>{label}</span>
+      <button
+        id={id}
+        role="switch"
+        aria-checked={checked}
+        aria-labelledby={`${id}-label`}
+        className={`toggle-switch${checked ? ' toggle-switch-on' : ''}`}
+        onClick={() => onChange(!checked)}
+      >
+        <span className="toggle-switch-thumb" />
+      </button>
+    </div>
+  )
+}
+
+/**
+ * SectionGroup — Collapsible visual group with a header
+ */
+function SectionGroup({ title, children }) {
+  return (
+    <div className="chart-settings-group">
+      <span className="chart-settings-group-title">{title}</span>
+      {children}
+    </div>
+  )
+}
 
 export default function ChartSettings({ chartConfig, onChartConfigChange }) {
   const [open, setOpen] = useState(false)
@@ -91,68 +128,60 @@ export default function ChartSettings({ chartConfig, onChartConfigChange }) {
       </button>
       {open && (
         <div className="chart-settings-popover" ref={popoverRef}>
-          <LineConfig
-            label="Scope"
-            dotClass="chart-settings-dot-scope"
-            typeKey="scopeType"
-            fillKey="scopeFill"
-            colorKey="scopeColor"
-            defaultColor="#75AADB"
-            config={config}
-            onChange={setDraftValue}
-          />
-          <LineConfig
-            label="Completed"
-            dotClass="chart-settings-dot-completed"
-            typeKey="completedType"
-            fillKey="completedFill"
-            colorKey="completedColor"
-            defaultColor="#FCBF49"
-            config={config}
-            onChange={setDraftValue}
-          />
-           <IdealConfig
+          <span className="chart-settings-popover-title">Chart Settings</span>
+
+          {/* ── Line Styles ─────────────────────────────────────────── */}
+          <SectionGroup title="Line Styles">
+            <LineConfig
+              label="Scope"
+              dotClass="chart-settings-dot-scope"
+              typeKey="scopeType"
+              fillKey="scopeFill"
+              colorKey="scopeColor"
+              defaultColor="#75AADB"
+              config={config}
+              onChange={setDraftValue}
+            />
+            <LineConfig
+              label="Completed"
+              dotClass="chart-settings-dot-completed"
+              typeKey="completedType"
+              fillKey="completedFill"
+              colorKey="completedColor"
+              defaultColor="#FCBF49"
+              config={config}
+              onChange={setDraftValue}
+            />
+            <IdealConfig
               colorKey="idealColor"
               config={config}
               onChange={setDraftValue}
             />
-            <div className="chart-settings-section">
-              <span className="chart-settings-label">Trend Line</span>
-              <div className="chart-settings-row">
-                 <button
-                   className={`chart-settings-opt${config.showTrendLine ? ' chart-settings-opt-active' : ''}`}
-                   onClick={() => setDraftValue('showTrendLine', !config.showTrendLine)}
-                   title="Show a linear regression trend line based on completed work"
-                 >
-                   {config.showTrendLine ? 'Enabled' : 'Disabled'}
-                 </button>
-              </div>
-            </div>
-            <div className="chart-settings-section">
-              <span className="chart-settings-label">Dates</span>
-              <div className="chart-settings-row">
-                 <button
-                   className={`chart-settings-opt${config.showDates !== false ? ' chart-settings-opt-active' : ''}`}
-                   onClick={() => setDraftValue('showDates', !(config.showDates !== false))}
-                   title="Show or hide date controls on the chart"
-                 >
-                   {config.showDates !== false ? 'Enabled' : 'Disabled'}
-                 </button>
-              </div>
-            </div>
-            <div className="chart-settings-section">
-              <span className="chart-settings-label">First Sprint</span>
-              <div className="chart-settings-row">
-                 <button
-                   className={`chart-settings-opt${config.showFirstSprintLabel !== false ? ' chart-settings-opt-active' : ''}`}
-                   onClick={() => setDraftValue('showFirstSprintLabel', !(config.showFirstSprintLabel !== false))}
-                   title="Show or hide the first sprint label on the X-axis"
-                 >
-                   {config.showFirstSprintLabel !== false ? 'Enabled' : 'Disabled'}
-                 </button>
-              </div>
-            </div>
-            <div className="chart-settings-actions">
+          </SectionGroup>
+
+          {/* ── Display ─────────────────────────────────────────────── */}
+          <SectionGroup title="Display">
+            <ToggleSwitch
+              id="settings-trend-line"
+              label="Trend Line"
+              checked={!!config.showTrendLine}
+              onChange={(v) => setDraftValue('showTrendLine', v)}
+            />
+            <ToggleSwitch
+              id="settings-dates"
+              label="Dates"
+              checked={config.showDates !== false}
+              onChange={(v) => setDraftValue('showDates', v)}
+            />
+            <ToggleSwitch
+              id="settings-first-sprint"
+              label="First Sprint"
+              checked={config.showFirstSprintLabel !== false}
+              onChange={(v) => setDraftValue('showFirstSprintLabel', v)}
+            />
+          </SectionGroup>
+
+          <div className="chart-settings-actions">
             <button
               className="chart-settings-cancel"
               onClick={handleCancel}

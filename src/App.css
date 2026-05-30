@@ -429,8 +429,37 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
-  min-width: 200px;
+  min-width: 240px;
   z-index: 20;
+}
+
+.chart-settings-popover-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-h);
+  letter-spacing: -0.2px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2px;
+}
+
+.chart-settings-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chart-settings-group + .chart-settings-group {
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+}
+
+.chart-settings-group-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-dim);
 }
 
 .chart-settings-section {
@@ -534,8 +563,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   border: 2px solid var(--border);
   cursor: pointer;
@@ -544,11 +573,12 @@
   padding: 0;
   background: none;
   flex-shrink: 0;
-  transition: border-color var(--transition-fast);
+  transition: border-color var(--transition-fast), transform var(--transition-fast);
 }
 
 .chart-settings-color-swatch:hover {
   border-color: var(--accent);
+  transform: scale(1.15);
 }
 
 .chart-settings-color-swatch input[type="color"] {
@@ -581,6 +611,66 @@
   &:hover {
     color: var(--danger);
   }
+}
+
+/* ─── Toggle Switch ───────────────────────────────────────────────────── */
+
+.toggle-switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 24px;
+}
+
+.toggle-switch-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.3;
+}
+
+.toggle-switch {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: var(--bg-alt);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+}
+
+.toggle-switch:hover {
+  border-color: var(--accent-border);
+}
+
+.toggle-switch:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.toggle-switch-on {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.toggle-switch-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--text-dim);
+  transition: all var(--transition-fast);
+}
+
+.toggle-switch-on .toggle-switch-thumb {
+  left: 18px;
+  background: white;
 }
 
 .chart-settings-actions {

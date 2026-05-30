@@ -53,9 +53,10 @@ Esta guía rápida explica las acciones básicas para que un usuario nuevo empie
   - Nota: cada sprint puede tener como máximo una entrada `Scope` y una `Completed`; si intentas duplicar, el toggle quedará desactivado.
 
 - **Ajustes de la gráfica (`Chart settings`)**:
-  - Haz clic en el icono de engranaje (arriba a la derecha de la gráfica) para abrir la ventana de ajustes.
-  - Los cambios se guardan en borrador: usa `Apply` para confirmar y actualizar la gráfica, o `Cancel` para descartarlos.
-  - Puedes elegir el tipo de línea (`Linear` o `Step`), activar/desactivar el relleno de área y cambiar colores por línea.
+   - Haz clic en el icono de engranaje (arriba a la derecha de la gráfica) para abrir la ventana de ajustes.
+   - Los cambios se guardan en borrador: usa `Apply` para confirmar y actualizar la gráfica, o `Cancel` para descartarlos.
+   - Sección **Line Styles**: configura el tipo de línea (`Linear` o `Step`), activa/desactiva el relleno de área y cambia colores por línea (Scope, Completed, Ideal).
+   - Sección **Display**: toggle switches para mostrar/ocultar Trend Line, controles de fecha (Dates) y la etiqueta del primer sprint (First Sprint).
 
 - **Copiar/Exportar imagen**:
   - Pulsa el icono de copiar (junto al engranaje) para exportar la gráfica como PNG y copiarla al portapapeles.

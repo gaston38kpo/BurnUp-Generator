@@ -95,12 +95,11 @@ describe('ChartSettings', () => {
       />,
     )
     fireEvent.click(screen.getByLabelText('Chart settings'))
-    // First Sprint section exists and shows "Enabled" by default
-    const firstSprintSection = screen.getByText('First Sprint').closest('.chart-settings-section')
-    const firstSprintBtn = within(firstSprintSection).getByText('Enabled')
-    expect(firstSprintBtn).toHaveClass('chart-settings-opt-active')
+    // First Sprint switch exists and is ON by default
+    const firstSprintSwitch = screen.getByRole('switch', { name: 'First Sprint' })
+    expect(firstSprintSwitch).toHaveAttribute('aria-checked', 'true')
     // Toggle it
-    fireEvent.click(firstSprintBtn)
+    fireEvent.click(firstSprintSwitch)
     fireEvent.click(screen.getByText('Apply'))
     expect(onChange).toHaveBeenCalledWith(
       expect.objectContaining({ showFirstSprintLabel: false }),
@@ -116,15 +115,37 @@ describe('ChartSettings', () => {
       />,
     )
     fireEvent.click(screen.getByLabelText('Chart settings'))
-    // Dates section exists and shows "Enabled" by default
-    const datesSection = screen.getByText('Dates').closest('.chart-settings-section')
-    const datesBtn = within(datesSection).getByText('Enabled')
-    expect(datesBtn).toHaveClass('chart-settings-opt-active')
+    // Dates switch exists and is ON by default
+    const datesSwitch = screen.getByRole('switch', { name: 'Dates' })
+    expect(datesSwitch).toHaveAttribute('aria-checked', 'true')
     // Toggle it
-    fireEvent.click(datesBtn)
+    fireEvent.click(datesSwitch)
     fireEvent.click(screen.getByText('Apply'))
     expect(onChange).toHaveBeenCalledWith(
       expect.objectContaining({ showDates: false }),
     )
+  })
+
+  it('renders section groups titles', () => {
+    render(
+      <ChartSettings
+        chartConfig={defaultConfig}
+        onChartConfigChange={() => {}}
+      />,
+    )
+    fireEvent.click(screen.getByLabelText('Chart settings'))
+    expect(screen.getByText('Line Styles')).toBeInTheDocument()
+    expect(screen.getByText('Display')).toBeInTheDocument()
+  })
+
+  it('renders popover title', () => {
+    render(
+      <ChartSettings
+        chartConfig={defaultConfig}
+        onChartConfigChange={() => {}}
+      />,
+    )
+    fireEvent.click(screen.getByLabelText('Chart settings'))
+    expect(screen.getByText('Chart Settings')).toBeInTheDocument()
   })
 })

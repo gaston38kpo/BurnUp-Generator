@@ -85,7 +85,7 @@ export default function Header({
             className='sprint-badge-input'
             value={sprintEdit.draft}
             min={1}
-            max={400}
+            max={1000}
             step={1}
             onChange={(e) =>
               sprintEdit.setDraft(e.target.value)
@@ -113,7 +113,7 @@ export default function Header({
             className='offset-badge-input'
             value={offsetEdit.draft}
             min={0}
-            max={100000}
+            max={1000000}
             step={1}
             onChange={(e) =>
               offsetEdit.setDraft(e.target.value)

@@ -89,7 +89,9 @@ export default function App() {
       state.present.entries.length === 0 &&
       state.present.title === '' &&
       state.present.dateFrom === '' &&
-      state.present.dateTo === '';
+      state.present.dateTo === '' &&
+      state.present.sprintCount === DEFAULT_STATE.sprintCount &&
+      state.present.sprintOffset === DEFAULT_STATE.sprintOffset;
 
     // ─── Entry mutation handlers ────────────────────────────────────────────
     const handleEntryAdd = useCallback((sprintId, tipo, valor, mode) => {
